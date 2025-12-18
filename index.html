@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Séquenceur</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Séquenceur</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -12,10 +12,18 @@
 
 <div id="grid"></div>
 
-<button id="play">Play</button>
-<label>Tempo
-  <input id="tempo" type="number" value="120" min="40" max="200">
-</label>
+<div style="margin: 15px 0;">
+  <button id="play">Play / Stop</button>
+  <label>Tempo
+    <input id="tempo" type="number" value="120" min="40" max="200">
+  </label>
+</div>
+
+<div style="margin: 15px 0;">
+  <button class="pad" data-inst="kick">Kick (S)</button>
+  <button class="pad" data-inst="snare">Snare (D)</button>
+  <button class="pad" data-inst="hihat">Hi-Hat (F)</button>
+</div>
 
 <script src="script.js"></script>
 </body>
