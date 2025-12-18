@@ -16,8 +16,8 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav", // premier pas du groupe
-  soft: "sounds/click_soft.wav"      // les autres temps
+  strong: "sounds/click_strong.wav", // pas 1
+  soft: "sounds/click_soft.wav"      // pas 5, 9, 13
 };
 const metronomeBuffers = {};
 
@@ -119,10 +119,14 @@ function tick(){
     }
   });
 
-  // Métronome : jouer sur tous les temps
+  // Métronome : click_strong sur pas 0, click_soft sur 4, 8, 12
   if(metronomeOn){
-    const strong = stepIndex % 4 === 0; // vrai pour premier pas du groupe
-    const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
+    let buf = null;
+    if(stepIndex === 0){
+      buf = metronomeBuffers.strong;
+    } else if ([4,8,12].includes(stepIndex)){
+      buf = metronomeBuffers.soft;
+    }
     if(buf){
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
@@ -165,15 +169,6 @@ document.addEventListener("keydown", e=>{
   }
 });
 
-// --- Bouton Métronome ---
-const metronomeBtn = document.getElementById("metronomeBtn");
-if(metronomeBtn){
-  metronomeBtn.onclick = ()=>{
-    metronomeOn = !metronomeOn;
-    metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
-  };
-}
-
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
@@ -200,7 +195,7 @@ function checkPattern() {
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
-    msg.textContent = "Bravo !";
+    msg.textContent = "Bravo ! Pattern correct 🎉";
     controlsDiv.appendChild(msg);
   }
 
