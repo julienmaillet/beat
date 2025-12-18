@@ -64,3 +64,10 @@ body {
   text-align: center;
   margin: 15px 0;
 }
+
+.stepNumber {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 2px;
+  color: #333;
+}
