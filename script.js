@@ -138,6 +138,16 @@ function tick(){
   stepIndex = (stepIndex + 1) % 16;
 }
 
+// --- Bouton Métronome On / Off ---
+const metronomeBtn = document.getElementById("metronomeBtn");
+
+metronomeBtn.onclick = () => {
+  metronomeOn = !metronomeOn;
+  metronomeBtn.textContent = metronomeOn
+    ? "Métronome On"
+    : "Métronome Off";
+};
+
 // --- Démarrage / arrêt séquenceur ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
