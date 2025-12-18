@@ -45,8 +45,8 @@ body {
 
 /* Pads carrés */
 .pad {
-  width: calc((100% - 80px) / 16 * 3); /* 80px = largeur du label */
-  aspect-ratio: 1;                     /* carré parfait */
+  width: calc((100% - 80px) / 16 * 3); /* environ 3 steps de largeur */
+  aspect-ratio: 1;
   margin: 5px;
   border-radius: 5px;
   border: none;
@@ -65,9 +65,9 @@ body {
   margin: 15px 0;
 }
 
-.stepNumber {
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2px;
+/* Style des chiffres permanents sous la grille */
+#timeNumbers span {
+  font-size: 16px;
+  font-weight: bold;
   color: #333;
 }
