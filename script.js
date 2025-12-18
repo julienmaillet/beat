@@ -14,14 +14,6 @@ let stepIndex = 0;
 let timer = null;
 let metronomeOn = true;
 
-// --- Sons du métronome ---
-const metronomeSounds = {
-  strong: "sounds/click_strong.wav",
-  soft: "sounds/click_soft.wav"
-};
-
-const metronomeBuffers = {};
-
 // --- Charger les sons instruments ---
 async function loadSound(name, url){
   const res = await fetch(url);
@@ -29,21 +21,10 @@ async function loadSound(name, url){
   buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-// --- Charger les sons du métronome ---
-async function loadMetronomeSounds(){
-  for(const [k, url] of Object.entries(metronomeSounds)){
-    const res = await fetch(url);
-    const arrayBuffer = await res.arrayBuffer();
-    metronomeBuffers[k] = await audioCtx.decodeAudioData(arrayBuffer);
-  }
-}
-
 // --- Lancer le chargement de tous les sons ---
 Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons instruments chargés"));
-
-loadMetronomeSounds().then(()=>console.log("Sons métronome chargés"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
@@ -106,14 +87,16 @@ function play(inst){
   src.start();
 }
 
-// --- Métronome (WAV) ---
+// --- Métronome avec OscillatorNode ---
 function clickSound(strong=false){
-  const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
-  if(!buf) return;
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  src.connect(audioCtx.destination);
-  src.start();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = strong ? 1500 : 1000; // plus aigu sur le premier temps
+  gain.gain.value = strong ? 0.3 : 0.15;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.05);
 }
 
 // --- Tick séquenceur ---
@@ -132,8 +115,9 @@ function tick(){
     }
   });
 
-  if(metronomeOn){
-    clickSound(stepIndex % 4 === 0);
+  // Métronome : seulement premier pas de chaque groupe de 4
+  if(metronomeOn && stepIndex % 4 === 0){
+    clickSound(true); // true → plus aigu
   }
 
   stepIndex = (stepIndex + 1) % 16;
@@ -181,7 +165,7 @@ if(metronomeBtn){
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  kick:   [0,0,1,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
   snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
   hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
