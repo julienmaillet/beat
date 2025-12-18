@@ -51,7 +51,7 @@ body {
   max-width: 80px;     /* pour ne pas dépasser */
   aspect-ratio: 1;     /* carré */
   margin-right: 10px;
-  border-radius: 5px;
+  border-radius: 15px;
   border: none;
   background: #ffcc00;
   cursor: pointer;
