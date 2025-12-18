@@ -59,7 +59,8 @@ const gridEl = document.getElementById("grid");
 
     step.onclick = () => {
       step.classList.toggle("active");
-      play(inst);
+      play(inst);      // feedback immédiat
+      checkPattern();  // validation automatique
     };
 
     rowEl.appendChild(step);
@@ -100,12 +101,12 @@ function play(inst){
 function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 5000 : 1000;
+  osc.frequency.value = strong ? 5000 : 1000; // premier temps plus aigu
   gain.gain.value = strong ? 0.3 : 0.15;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
-  osc.stop(audioCtx.currentTime + 0.05);
+  osc.stop(audioCtx.currentTime + (strong ? 0.15 : 0.05));
 }
 
 // --- Tick séquenceur ---
@@ -161,3 +162,39 @@ document.addEventListener("keydown", e=>{
     document.getElementById("play").click();
   }
 });
+
+// --- Validation automatique du pattern ---
+const correctPattern = {
+  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+};
+
+function checkPattern() {
+  let ok = true;
+
+  grid.forEach(row => {
+    const inst = row[0].dataset.inst;
+    row.forEach((step, i) => {
+      if(step.classList.contains("active") !== !!correctPattern[inst][i]){
+        ok = false;
+      }
+    });
+  });
+
+  if(ok){
+    if(!document.getElementById("successMsg")){
+      const msg = document.createElement("div");
+      msg.id = "successMsg";
+      msg.textContent = "Bravo ! Pattern correct 🎉";
+      msg.style.textAlign = "center";
+      msg.style.fontSize = "20px";
+      msg.style.color = "green";
+      msg.style.marginTop = "10px";
+      gridEl.parentNode.insertBefore(msg, gridEl.nextSibling);
+    }
+  } else {
+    const oldMsg = document.getElementById("successMsg");
+    if(oldMsg) oldMsg.remove();
+  }
+}
