@@ -4,22 +4,17 @@ body {
   padding: 20px;
 }
 
-#gridContainer {
+#grid {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .row {
   display: grid;
-  grid-template-columns: 80px repeat(16, 1fr);
+  grid-template-columns: repeat(16, 1fr);
   gap: 4px;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.rowLabel {
-  text-align: right;
-  font-weight: bold;
-  padding-right: 8px;
 }
 
 .step {
@@ -37,11 +32,10 @@ body {
 }
 
 .pad {
-  padding: 15px 25px;
-  margin: 5px;
-  border-radius: 10px;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 5px;
   border: none;
   background: #ffcc00;
   cursor: pointer;
-  font-weight: bold;
 }
