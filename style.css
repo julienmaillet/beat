@@ -4,14 +4,13 @@ body {
   padding: 20px;
 }
 
-/* Grille principale */
 #grid {
   display: grid;
+  grid-template-rows: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
 }
 
-/* Lignes des instruments */
 .row {
   display: grid;
   grid-template-columns: 80px repeat(16, 1fr);
@@ -21,30 +20,42 @@ body {
 
 .rowLabel {
   text-align: right;
+  padding-right: 10px;
   font-weight: bold;
-  padding-right: 8px;
 }
 
 .step {
   aspect-ratio: 1;
   background: #ddd;
   border-radius: 4px;
-  cursor: pointer;
-}
-
-.step.groupStart {
-  background: #bbb; /* premier pas de chaque groupe */
 }
 
 .step.active {
   background: #ffcc00;
 }
 
+.step.correct {
+  background: #00cc44;
+}
+
 .step.playing {
   outline: 2px solid black;
 }
 
-/* Ligne de chiffres sous la grille */
+.step.groupStart {
+  background-color: #bbb;
+}
+
+.pad {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+  border-radius: 5px;
+  border: none;
+  background: #ffcc00;
+  cursor: pointer;
+}
+
 .timeRow {
   display: grid;
   grid-template-columns: 80px repeat(16, 1fr);
@@ -58,49 +69,18 @@ body {
   font-weight: bold;
   font-size: 16px;
   color: #333;
-  aspect-ratio: 1;        
+  aspect-ratio: 1;
   display: flex;
-  align-items: center;    
+  align-items: center;
   justify-content: center;
 }
 
-/* Pads carrés */
-.pad {
-  width: calc((100% - 80px) / 16 * 3); /* environ 3 steps de largeur */
-  aspect-ratio: 1;
-  margin: 5px;
-  border-radius: 15px;
-  border: none;
-  background: #ffcc00;
-  cursor: pointer;
-  font-weight: bold;
-  display: inline-block;
-  text-align: center;
-  line-height: normal;
-  font-size: 14px;
-}
-
-/* Centrer les boutons Play / Stop, Tempo et Métronome */
-.controls {
-  text-align: center;
-  margin: 15px 0;
-}
-
-
-.step.correct {
-  background-color: #4CAF50 !important; /* vert pour le pattern correct */
-}
-
+/* Message succès sous les boutons */
 #successMsg {
-  position: absolute; /* au-dessus du contenu */
-  top: 100px;         /* ajuster selon l'endroit où tu veux le message */
-  left: 50%;
-  transform: translateX(-50%);
+  display: none;
+  margin-top: 10px;
   font-size: 20px;
   font-weight: bold;
   color: green;
-  background: rgba(255, 255, 255, 0.9); /* léger fond blanc semi-transparent */
-  padding: 8px 12px;
-  border-radius: 5px;
-  z-index: 1000;      /* pour qu’il soit au-dessus */
+  text-align: center;
 }
