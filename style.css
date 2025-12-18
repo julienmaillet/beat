@@ -85,3 +85,8 @@ body {
   text-align: center;
   margin: 15px 0;
 }
+
+
+.step.correct {
+  background-color: #4CAF50 !important; /* vert pour le pattern correct */
+}
