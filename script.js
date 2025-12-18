@@ -187,11 +187,12 @@ function checkPattern() {
     if(!document.getElementById("successMsg")){
       const msg = document.createElement("div");
       msg.id = "successMsg";
-      msg.textContent = "Bravo ! Pattern correct 🎉";
+      msg.textContent = "Bravo !";
       msg.style.textAlign = "center";
-      msg.style.fontSize = "20px";
+      msg.style.fontSize = "40px";
       msg.style.color = "green";
       msg.style.marginTop = "10px";
+      msg.style.marginBottom = "10px";
       gridEl.parentNode.insertBefore(msg, gridEl.nextSibling);
     }
   } else {
