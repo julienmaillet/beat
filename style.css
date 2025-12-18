@@ -66,8 +66,19 @@ body {
 }
 
 /* Style des chiffres permanents sous la grille */
+#timeNumbers {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  width: 100%;
+  max-width: 960px; /* largeur max correspondant à la grille */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 #timeNumbers span {
   font-size: 16px;
   font-weight: bold;
   color: #333;
+  text-align: center;
 }
