@@ -103,6 +103,11 @@ function clickSound(strong=false){
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
 
+  // Métronome : seulement premier pas du groupe de 4
+  if(metronomeOn && stepIndex % 4 === 0){
+    clickSound(true);
+  }
+
   grid.forEach(row => {
     const step = row[stepIndex];
     if(!step) return;
@@ -114,11 +119,6 @@ function tick(){
       play(inst);
     }
   });
-
-  // Métronome : seulement premier pas de chaque groupe de 4
-  if(metronomeOn && stepIndex % 4 === 0){
-    clickSound(true); // true → plus aigu
-  }
 
   stepIndex = (stepIndex + 1) % 16;
 }
@@ -165,7 +165,7 @@ if(metronomeBtn){
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [0,0,1,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
   snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
   hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
