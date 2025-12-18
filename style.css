@@ -4,6 +4,7 @@ body {
   padding: 20px;
 }
 
+/* Grille principale */
 #grid {
   display: grid;
   gap: 8px;
@@ -43,7 +44,7 @@ body {
   outline: 2px solid black;
 }
 
-/* Ligne des chiffres */
+/* Ligne de chiffres sous la grille */
 .timeRow {
   display: grid;
   grid-template-columns: 80px repeat(16, 1fr);
@@ -57,10 +58,10 @@ body {
   font-weight: bold;
   font-size: 16px;
   color: #333;
-  aspect-ratio: 1;        /* même hauteur que largeur → carré comme les steps */
+  aspect-ratio: 1;        
   display: flex;
-  align-items: center;    /* centrer verticalement le chiffre */
-  justify-content: center; /* centrer horizontalement */
+  align-items: center;    
+  justify-content: center;
 }
 
 /* Pads carrés */
