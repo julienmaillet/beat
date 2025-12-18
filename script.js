@@ -14,17 +14,33 @@ let stepIndex = 0;
 let timer = null;
 let metronomeOn = true;
 
-// --- Charger les sons instruments ---
+// --- Sons du métronome ---
+const metronomeSounds = {
+  strong: "sounds/click_strong.wav", // premier temps du groupe
+  soft: "sounds/click_soft.wav"      // optionnel pour autres temps
+};
+const metronomeBuffers = {};
+
+// --- Charger tous les sons ---
 async function loadSound(name, url){
   const res = await fetch(url);
   const arrayBuffer = await res.arrayBuffer();
   buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-// --- Lancer le chargement de tous les sons ---
+async function loadMetronomeSounds(){
+  for(let key in metronomeSounds){
+    const res = await fetch(metronomeSounds[key]);
+    const arrayBuffer = await res.arrayBuffer();
+    metronomeBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
+  }
+}
+
 Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons instruments chargés"));
+
+loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
@@ -87,26 +103,20 @@ function play(inst){
   src.start();
 }
 
-// --- Métronome avec OscillatorNode ---
+// --- Jouer un son de métronome ---
 function clickSound(strong=false){
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 1500 : 1000; // plus aigu sur le premier temps
-  gain.gain.value = strong ? 0.3 : 0.15;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.05);
+  const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
+  if(!buf) return;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(audioCtx.destination);
+  src.start();
 }
 
 // --- Tick séquenceur ---
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
-
-  // Métronome : seulement premier pas du groupe de 4
-  if(metronomeOn && stepIndex % 4 === 0){
-    clickSound(true);
-  }
 
   grid.forEach(row => {
     const step = row[stepIndex];
@@ -119,6 +129,11 @@ function tick(){
       play(inst);
     }
   });
+
+  // Métronome : uniquement premier pas du groupe de 4
+  if(metronomeOn && stepIndex % 4 === 0){
+    clickSound(true); // clic fort
+  }
 
   stepIndex = (stepIndex + 1) % 16;
 }
@@ -165,7 +180,7 @@ if(metronomeBtn){
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  kick:   [0,0,1,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
   snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
   hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
