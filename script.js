@@ -12,18 +12,7 @@ const buffers = {};
 let grid = [];
 let stepIndex = 0;
 let timer = null;
-
-// --- Métronome On/Off ---
 let metronomeOn = true;
-document.addEventListener("DOMContentLoaded", ()=>{
-  const metBtn = document.getElementById("metronomeBtn");
-  if(metBtn){
-    metBtn.onclick = ()=>{
-      metronomeOn = !metronomeOn;
-      metBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
-    };
-  }
-});
 
 // --- Charger les sons ---
 async function loadSound(name, url){
@@ -36,7 +25,7 @@ Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons chargés"));
 
-// --- Création de la grille (ordre hihat, snare, kick + labels + premier pas foncé) ---
+// --- Création de la grille ---
 const gridEl = document.getElementById("grid");
 ["hihat","snare","kick"].forEach(inst=>{
   const row = [];
@@ -173,16 +162,28 @@ const correctPattern = {
 function checkPattern() {
   let ok = true;
 
+  // Vérifier si chaque step correspond au pattern
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
     row.forEach((step, i) => {
-      if(step.classList.contains("active") !== !!correctPattern[inst][i]){
+      const shouldBeActive = !!correctPattern[inst][i];
+      if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
+      step.classList.remove("correct"); // retirer toute ancienne coloration
     });
   });
 
   if(ok){
+    // Ajouter la classe correct uniquement aux steps actives du pattern attendu
+    grid.forEach(row => {
+      const inst = row[0].dataset.inst;
+      row.forEach((step, i) => {
+        if(correctPattern[inst][i]) step.classList.add("correct");
+      });
+    });
+
+    // Message de succès
     if(!document.getElementById("successMsg")){
       const msg = document.createElement("div");
       msg.id = "successMsg";
