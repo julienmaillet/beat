@@ -66,19 +66,17 @@ body {
 }
 
 /* Style des chiffres permanents sous la grille */
-#timeNumbers {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-  width: 100%;
-  max-width: 960px; /* largeur max correspondant à la grille */
-  margin-left: auto;
-  margin-right: auto;
+.timeNumbers {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 4px; /* même que les steps */
+  max-width: 960px; /* optionnel pour correspondre à la grille */
+  margin: 5px auto 20px auto; /* centré sous la grille */
 }
 
-#timeNumbers span {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
+.timeNumbers div {
   text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
 }
