@@ -14,16 +14,36 @@ let stepIndex = 0;
 let timer = null;
 let metronomeOn = true;
 
-// --- Charger les sons ---
+// --- Sons du métronome ---
+const metronomeSounds = {
+  strong: "sounds/click_strong.wav", // premier temps
+  soft: "sounds/click_soft.wav"      // autres temps
+};
+
+const metronomeBuffers = {};
+
+// --- Charger les sons instruments ---
 async function loadSound(name, url){
   const res = await fetch(url);
   const arrayBuffer = await res.arrayBuffer();
   buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
+// --- Charger les sons du métronome ---
+async function loadMetronomeSounds(){
+  for(const [k, url] of Object.entries(metronomeSounds)){
+    const res = await fetch(url);
+    const arrayBuffer = await res.arrayBuffer();
+    metronomeBuffers[k] = await audioCtx.decodeAudioData(arrayBuffer);
+  }
+}
+
+// --- Lancer le chargement de tous les sons ---
 Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
-).then(()=>console.log("Sons chargés"));
+).then(()=>console.log("Sons instruments chargés"));
+
+loadMetronomeSounds().then(()=>console.log("Sons métronome chargés"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
@@ -76,7 +96,7 @@ for(let i=0;i<16;i++){
 
 gridEl.appendChild(timeRowEl);
 
-// --- Jouer un son ---
+// --- Jouer un son instrument ---
 function play(inst){
   const buf = buffers[inst];
   if(!buf) return;
@@ -86,16 +106,14 @@ function play(inst){
   src.start();
 }
 
-// --- Métronome ---
+// --- Métronome (avec sons WAV) ---
 function clickSound(strong=false){
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 5000 : 1000; // premier temps plus aigu
-  gain.gain.value = strong ? 0.3 : 0.15;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + (strong ? 0.15 : 0.05));
+  const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
+  if(!buf) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(audioCtx.destination);
+  src.start();
 }
 
 // --- Tick séquenceur ---
@@ -114,14 +132,14 @@ function tick(){
     }
   });
 
-  if(metronomeOn && stepIndex % 4 === 0){
-    clickSound(true);
+  if(metronomeOn){
+    clickSound(stepIndex % 4 === 0); // premier temps = fort
   }
 
   stepIndex = (stepIndex + 1) % 16;
 }
 
-// --- Démarrage / arrêt ---
+// --- Démarrage / arrêt séquenceur ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
     clearInterval(timer);
@@ -152,6 +170,15 @@ document.addEventListener("keydown", e=>{
   }
 });
 
+// --- Bouton Métronome ---
+const metronomeBtn = document.getElementById("metronomeBtn");
+if(metronomeBtn){
+  metronomeBtn.onclick = ()=>{
+    metronomeOn = !metronomeOn;
+    metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
+  };
+}
+
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
@@ -162,7 +189,6 @@ const correctPattern = {
 function checkPattern() {
   let ok = true;
 
-  // Vérifier si chaque step correspond au pattern
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
     row.forEach((step, i) => {
@@ -170,12 +196,12 @@ function checkPattern() {
       if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
-      step.classList.remove("correct"); // retirer toute ancienne coloration
+      step.classList.remove("correct"); // retirer coloration ancienne
     });
   });
 
   if(ok){
-    // Ajouter la classe correct uniquement aux steps actives du pattern attendu
+    // Mettre vert uniquement les steps actives du pattern correct
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
       row.forEach((step, i) => {
@@ -187,12 +213,11 @@ function checkPattern() {
     if(!document.getElementById("successMsg")){
       const msg = document.createElement("div");
       msg.id = "successMsg";
-      msg.textContent = "Bravo !";
+      msg.textContent = "Bravo ! Pattern correct 🎉";
       msg.style.textAlign = "center";
-      msg.style.fontSize = "40px";
+      msg.style.fontSize = "20px";
       msg.style.color = "green";
       msg.style.marginTop = "10px";
-      msg.style.marginBottom = "10px";
       gridEl.parentNode.insertBefore(msg, gridEl.nextSibling);
     }
   } else {
