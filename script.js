@@ -1,12 +1,13 @@
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
-// Instruments et fichiers
+// --- Instruments et fichiers ---
 const instruments = {
   kick: "sounds/kick.wav",
   snare: "sounds/snare.wav",
   hihat: "sounds/hihat.wav"
 };
+
 const buffers = {};
 let grid = [];
 let stepIndex = 0;
@@ -24,44 +25,42 @@ Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons chargés"));
 
-// --- Ordre et génération grille avec label
-const instrumentOrder = ["hihat","snare","kick"];
-const gridContainer = document.getElementById("gridContainer");
-
-instrumentOrder.forEach(inst=>{
+// --- Création de la grille ---
+const gridEl = document.getElementById("grid");
+["kick","snare","hihat"].forEach(inst=>{
   const row = [];
-  const divRow = document.createElement("div");
-  divRow.className = "row";
-
-  const label = document.createElement("div");
-  label.className = "rowLabel";
-  label.textContent = inst;
-  divRow.appendChild(label);
+  const rowEl = document.createElement("div");
+  rowEl.className = "row";
 
   for(let i=0;i<16;i++){
     const step = document.createElement("div");
     step.className = "step";
     step.dataset.inst = inst;
-    step.onclick = ()=>step.classList.toggle("active");
-    divRow.appendChild(step);
+
+    step.onclick = () => {
+      step.classList.toggle("active");
+      play(inst); // feedback immédiat
+    };
+
+    rowEl.appendChild(step);
     row.push(step);
   }
 
-  gridContainer.appendChild(divRow);
+  gridEl.appendChild(rowEl);
   grid.push(row);
 });
 
-// --- Jouer un son sécurisé
+// --- Jouer un son (sécurisé) ---
 function play(inst){
   const buf = buffers[inst];
-  if(!buf) return;
+  if(!buf) return; // ← sécurité
   const src = audioCtx.createBufferSource();
   src.buffer = buf;
   src.connect(audioCtx.destination);
   src.start();
 }
 
-// --- Métronome
+// --- Métronome ---
 function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -73,54 +72,51 @@ function clickSound(strong=false){
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// --- Tick séquenceur (pulsation par 4 cases)
+// --- Tick séquenceur sécurisé ---
 function tick(){
-  grid.flat().forEach(s=>s.classList.remove("playing"));
+  grid.flat().forEach(s => s.classList.remove("playing"));
 
-  grid.forEach(row=>{
+  grid.forEach(row => {
     const step = row[stepIndex];
     if(!step) return;
 
     step.classList.add("playing");
+
     const inst = step.dataset.inst;
     if(step.classList.contains("active") && inst && buffers[inst]){
       play(inst);
     }
   });
 
-  if(metronomeOn && stepIndex % 4 === 0){
-    clickSound(true);
+  if(metronomeOn){
+    clickSound(stepIndex % 4 === 0);
   }
 
   stepIndex = (stepIndex + 1) % 16;
 }
 
-// --- Play / Stop
+// --- Démarrage / arrêt ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
     clearInterval(timer);
-    timer=null;
+    timer = null;
     return;
   }
-  if(audioCtx.state==='suspended') audioCtx.resume();
+
+  if(audioCtx.state === "suspended") audioCtx.resume();
 
   const bpm = +document.getElementById("tempo").value;
   const interval = (60/bpm/4)*1000;
   timer = setInterval(tick, interval);
 };
 
-// --- Métronome On/Off
-document.getElementById("metronomeBtn").onclick = ()=>{
-  metronomeOn = !metronomeOn;
-  document.getElementById("metronomeBtn").textContent = metronomeOn ? "Métronome On" : "Métronome Off";
-};
-
-// --- Pads clic et clavier
+// --- Pads clic + clavier ---
 document.querySelectorAll(".pad").forEach(p=>{
   p.onclick = ()=>play(p.dataset.inst);
 });
+
 document.addEventListener("keydown", e=>{
-  if(e.key==="s") play("kick");
-  if(e.key==="d") play("snare");
-  if(e.key==="f") play("hihat");
+  if(e.key === "s") play("kick");
+  if(e.key === "d") play("snare");
+  if(e.key === "f") play("hihat");
 });
