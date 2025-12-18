@@ -1,0 +1,117 @@
+body {
+  font-family: system-ui, sans-serif;
+  padding: 14px;
+  max-width: 520px;
+  margin: auto;
+}
+
+h2, .instruction {
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.label {
+  width: 60px;
+  font-weight: 600;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+
+.step {
+  aspect-ratio: 1;
+  background: #eaeaea;
+  border-radius: 4px;
+}
+
+.step.group-start {
+  border-left: 3px solid #000;
+}
+
+.step.kick.active  { background: #ff7043; }
+.step.snare.active { background: #42a5f5; }
+.step.hihat.active { background: #ffee58; }
+
+.step.playing {
+  outline: 3px solid #000;
+}
+
+.times {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 8px 60px 0;
+  font-weight: bold;
+  text-align: center;
+}
+
+.controls {
+  margin-top: 15px;
+  text-align: center;
+}
+
+button {
+  padding: 8px 16px;
+  font-size: 16px;
+  margin: 6px;
+}
+
+#result {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.pads {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pad {
+  flex: 1;
+  padding: 18px 0;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  background: #ddd;
+  user-select: none;
+}
+
+.pad span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.pad.kick  { background: #ffccbc; }
+.pad.snare { background: #bbdefb; }
+.pad.hihat { background: #fff9c4; }
+
+.pad.active {
+  filter: brightness(0.75);
+}
+
+.metronome {
+  margin-top: 12px;
+  text-align: center;
+}
+
+#metronomeBtn {
+  padding: 8px 16px;
+  font-size: 15px;
+}
+
+#metronomeBtn.active {
+  background: #4caf50;
+  color: white;
+}
