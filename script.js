@@ -64,11 +64,11 @@ function tick(){
   try {
     grid.flat().forEach(s => s.classList.remove('playing'));
 
-    grid.forEach(row => {
+    grid.forEach(row=>{
       const step = row[currentStep];
       if(step){
         step.classList.add('playing');
-        const inst = step.dataset.inst; // <- récupère de step
+        const inst = step.dataset.inst; // <- Récupération correcte depuis step
         if(step.classList.contains('active') && inst && instruments[inst].buffer){
           playSound(inst);
         }
