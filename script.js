@@ -195,7 +195,7 @@ function checkPattern() {
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
-    msg.textContent = "Bravo ! Pattern correct 🎉";
+    msg.textContent = "Bravo !";
     controlsDiv.appendChild(msg);
   }
 
