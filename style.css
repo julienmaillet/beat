@@ -46,15 +46,20 @@ body {
   background-color: #bbb;
 }
 
+/* Pads carrés */
 .pad {
-  width: 18%;          /* environ 3 pas sur 16 → 18% */
-  max-width: 80px;     /* pour ne pas dépasser */
-  aspect-ratio: 1;     /* carré */
-  margin-right: 10px;
-  border-radius: 15px;
+  width: calc((100% - 80px) / 16 * 3); /* environ 3 steps de largeur */
+  aspect-ratio: 1;
+  margin: 5px;
+  border-radius: 5px;
   border: none;
   background: #ffcc00;
   cursor: pointer;
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+  line-height: normal;
+  font-size: 14px;
 }
 
 .timeRow {
