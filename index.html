@@ -3,58 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Make a Beat</title>
+  <title>Séquenceur</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>Construis le pattern</h2>
-<p class="instruction" id="instruction"></p>
+<h1>Construis le pattern</h1>
 
-<div class="sequencer">
+<div id="grid"></div>
 
-  <div class="row" data-inst="kick">
-    <span class="label">Kick</span>
-    <div class="steps"></div>
-  </div>
-
-  <div class="row" data-inst="snare">
-    <span class="label">Snare</span>
-    <div class="steps"></div>
-  </div>
-
-  <div class="row" data-inst="hihat">
-    <span class="label">Hi‑Hat</span>
-    <div class="steps"></div>
-  </div>
-
-</div>
-
-<div class="times">
-  <span>1</span><span>2</span><span>3</span><span>4</span>
-</div>
-
-<div class="controls">
-  <button id="play">▶️ Play</button>
-  <label>
-    Tempo
-    <input type="range" id="tempo" min="60" max="160" value="120">
-    <span id="bpm">120</span>
-  </label>
-</div>
-
-<button id="check">Vérifier</button>
-<p id="result"></p>
-
-<div class="pads">
-  <div class="pad kick" data-inst="kick">Kick <span>S</span></div>
-  <div class="pad snare" data-inst="snare">Snare <span>D</span></div>
-  <div class="pad hihat" data-inst="hihat">Hi‑Hat <span>F</span></div>
-</div>
-
-<div class="metronome">
-  <button id="metronomeBtn">🟢 Clic</button>
-</div>
+<button id="play">Play</button>
+<label>Tempo
+  <input id="tempo" type="number" value="120" min="40" max="200">
+</label>
 
 <script src="script.js"></script>
 </body>
