@@ -53,14 +53,13 @@ const gridEl = document.getElementById("grid");
     const step = document.createElement("div");
     step.className = "step";
 
-    // couleur plus foncée pour le premier step de chaque groupe de 4
     if(i % 4 === 0) step.classList.add("groupStart");
 
     step.dataset.inst = inst;
 
     step.onclick = () => {
       step.classList.toggle("active");
-      play(inst); // feedback immédiat
+      play(inst);
     };
 
     rowEl.appendChild(step);
@@ -70,6 +69,22 @@ const gridEl = document.getElementById("grid");
   gridEl.appendChild(rowEl);
   grid.push(row);
 });
+
+// --- Ligne des chiffres sous la grille ---
+const timeRowEl = document.createElement("div");
+timeRowEl.className = "timeRow";
+const emptyLabel = document.createElement("div");
+timeRowEl.appendChild(emptyLabel);
+
+for(let i=0;i<16;i++){
+  const div = document.createElement("div");
+  if(i % 4 === 0){
+    div.textContent = (i/4 + 1);
+  }
+  timeRowEl.appendChild(div);
+}
+
+gridEl.appendChild(timeRowEl);
 
 // --- Jouer un son ---
 function play(inst){
@@ -85,7 +100,7 @@ function play(inst){
 function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 2000 : 1000; // plus aigu sur premier temps
+  osc.frequency.value = strong ? 2000 : 1000;
   gain.gain.value = strong ? 0.3 : 0.15;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
@@ -93,7 +108,7 @@ function clickSound(strong=false){
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// --- Tick séquenceur sécurisé ---
+// --- Tick séquenceur ---
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
 
@@ -141,8 +156,8 @@ document.addEventListener("keydown", e=>{
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
 
-  if(e.code === "Space"){        // barre d'espace
-    e.preventDefault();          // éviter le scroll
+  if(e.code === "Space"){
+    e.preventDefault();
     document.getElementById("play").click();
   }
 });
