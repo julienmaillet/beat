@@ -53,6 +53,12 @@ body {
   line-height: 60px;  /* pour centrer le texte verticalement */
 }
 
-.row .step:nth-child(4n+1) {
-  background: #bbb; /* un peu plus foncé que #ddd */
+.row .step:nth-child(4n) {
+  background: #bbb; /* option pour dernier pas */
 }
+
+/* Correction : utiliser nth-of-type pour ne prendre que les steps */
+.row .step:nth-of-type(4n-3) {
+  background: #bbb; /* premier pas de chaque groupe de 4 */
+}
+
