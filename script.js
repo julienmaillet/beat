@@ -16,8 +16,8 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav", // premier temps
-  soft: "sounds/click_soft.wav"      // autres temps
+  strong: "sounds/click_strong.wav",
+  soft: "sounds/click_soft.wav"
 };
 
 const metronomeBuffers = {};
@@ -68,8 +68,8 @@ const gridEl = document.getElementById("grid");
 
     step.onclick = () => {
       step.classList.toggle("active");
-      play(inst);      // feedback immédiat
-      checkPattern();  // validation automatique
+      play(inst);
+      checkPattern();
     };
 
     rowEl.appendChild(step);
@@ -106,7 +106,7 @@ function play(inst){
   src.start();
 }
 
-// --- Métronome (avec sons WAV) ---
+// --- Métronome (WAV) ---
 function clickSound(strong=false){
   const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
   if(!buf) return;
@@ -133,7 +133,7 @@ function tick(){
   });
 
   if(metronomeOn){
-    clickSound(stepIndex % 4 === 0); // premier temps = fort
+    clickSound(stepIndex % 4 === 0);
   }
 
   stepIndex = (stepIndex + 1) % 16;
@@ -196,33 +196,28 @@ function checkPattern() {
       if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
-      step.classList.remove("correct"); // retirer coloration ancienne
+      step.classList.remove("correct");
     });
   });
 
+  const controlsDiv = document.getElementById("controls");
+  let msg = document.getElementById("successMsg");
+  if(!msg){
+    msg = document.createElement("div");
+    msg.id = "successMsg";
+    msg.textContent = "Bravo ! Pattern correct 🎉";
+    controlsDiv.appendChild(msg);
+  }
+
   if(ok){
-    // Mettre vert uniquement les steps actives du pattern correct
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
-
-    // Message de succès
-    if(!document.getElementById("successMsg")){
-      const msg = document.createElement("div");
-      msg.id = "successMsg";
-      msg.textContent = "Bravo !";
-      msg.style.textAlign = "center";
-      msg.style.fontSize = "20px";
-      msg.style.color = "green";
-      msg.style.marginTop = "10px";
-      msg.style.marginBottom = "10px";
-      gridEl.parentNode.insertBefore(msg, gridEl.nextSibling);
-    }
+    msg.style.display = "block";
   } else {
-    const oldMsg = document.getElementById("successMsg");
-    if(oldMsg) oldMsg.remove();
+    msg.style.display = "none";
   }
 }
