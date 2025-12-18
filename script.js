@@ -59,7 +59,7 @@ const gridEl = document.getElementById("grid");
     const step = document.createElement("div");
     step.className = "step";
 
-    if(i % 4 === 0) step.classList.add("groupStart");
+    if(i % 4 === 0) step.classList.add("groupStart"); // <-- premier pas du groupe
 
     step.dataset.inst = inst;
 
