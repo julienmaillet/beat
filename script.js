@@ -141,3 +141,10 @@ document.addEventListener("keydown", e=>{
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
 });
+
+document.addEventListener("keydown", e=>{
+  if(e.code === "Space"){        // barre d'espace
+    e.preventDefault();          // éviter le scroll de la page
+    document.getElementById("play").click();
+  }
+});
