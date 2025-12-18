@@ -36,7 +36,7 @@ Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons chargés"));
 
-// --- Création de la grille (nouvel ordre, labels, groupeStart) ---
+// --- Création de la grille (nouvel ordre, labels, groupeStart, chiffres) ---
 const gridEl = document.getElementById("grid");
 ["hihat","snare","kick"].forEach(inst=>{
   const row = [];
@@ -55,6 +55,14 @@ const gridEl = document.getElementById("grid");
 
     // couleur plus foncée pour le premier step de chaque groupe de 4
     if(i % 4 === 0) step.classList.add("groupStart");
+
+    // Ajouter chiffre sous le premier step de chaque groupe de 4
+    if(i % 4 === 0){
+      const number = document.createElement("div");
+      number.className = "stepNumber";
+      number.textContent = (i/4 + 1); // 1, 2, 3, 4
+      step.appendChild(number);
+    }
 
     step.dataset.inst = inst;
 
@@ -140,11 +148,9 @@ document.addEventListener("keydown", e=>{
   if(e.key === "s") play("kick");
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
-});
 
-document.addEventListener("keydown", e=>{
   if(e.code === "Space"){        // barre d'espace
-    e.preventDefault();          // éviter le scroll de la page
+    e.preventDefault();          // éviter le scroll
     document.getElementById("play").click();
   }
 });
