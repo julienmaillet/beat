@@ -45,9 +45,8 @@ body {
 
 /* Pads carrés */
 .pad {
-  width: 60px;
-  height: 60px;
-  padding: 0;
+  width: calc((100% - 80px) / 16 * 3); /* 80px = largeur du label */
+  aspect-ratio: 1;                     /* carré parfait */
   margin: 5px;
   border-radius: 5px;
   border: none;
@@ -56,7 +55,8 @@ body {
   font-weight: bold;
   display: inline-block;
   text-align: center;
-  line-height: 60px; /* centrer texte verticalement */
+  line-height: normal;
+  font-size: 14px;
 }
 
 /* Centrer les boutons Play / Stop, Tempo et Métronome */
