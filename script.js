@@ -20,7 +20,7 @@ for(const key in instruments){
     .catch(err=>console.error(key,"erreur",err));
 }
 
-// --- Création de la grille ---
+// --- Création de la grille 16 pas x 3 lignes ---
 ['kick','snare','hihat'].forEach(inst=>{
   const row = [];
   const divRow = document.createElement('div');
@@ -59,17 +59,17 @@ function clickSound(strong=false){
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// --- Tick séquenceur corrigé ---
+// --- Tick séquenceur sécurisé ---
 function tick(){
-  try{
-    grid.flat().forEach(s=>s.classList.remove('playing'));
+  try {
+    grid.flat().forEach(s => s.classList.remove('playing'));
 
-    grid.forEach(row=>{
+    grid.forEach(row => {
       const step = row[currentStep];
       if(step){
         step.classList.add('playing');
-        const inst = step.dataset.inst;
-        if(step.classList.contains('active') && inst){
+        const inst = step.dataset.inst; // <- récupère de step
+        if(step.classList.contains('active') && inst && instruments[inst].buffer){
           playSound(inst);
         }
       }
@@ -81,22 +81,31 @@ function tick(){
 
     currentStep = (currentStep + 1) % 16;
 
-  }catch(e){ console.error("Erreur tick:",e); }
+  } catch(e){
+    console.error("Erreur tick:", e);
+  }
 }
 
-// --- Start/Stop ---
+// --- Start/Stop avec reprise du AudioContext si nécessaire ---
 document.getElementById('startStop').addEventListener('click',()=>{
   if(interval){
     clearInterval(interval); interval=null;
   } else {
-    if(audioCtx.state==='suspended') audioCtx.resume();
-    const bpm = parseInt(document.getElementById('tempo').value);
-    const ms = (60/bpm/4)*1000;
-    interval = setInterval(tick, ms);
+    if(audioCtx.state==='suspended'){
+      audioCtx.resume().then(()=> startSequencer());
+    } else {
+      startSequencer();
+    }
   }
 });
 
-// --- Pads clavier ---
+function startSequencer(){
+  const bpm = parseInt(document.getElementById('tempo').value);
+  const ms = (60/bpm/4)*1000; // double croche
+  interval = setInterval(tick, ms);
+}
+
+// --- Pads clavier et clic ---
 document.querySelectorAll('.pad').forEach(p=>{
   p.addEventListener('click',()=>playSound(p.dataset.inst));
 });
