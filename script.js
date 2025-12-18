@@ -36,7 +36,7 @@ Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons chargés"));
 
-// --- Création de la grille (nouvel ordre, labels, groupeStart) ---
+// --- Création de la grille (ordre hihat, snare, kick + labels + premier pas foncé) ---
 const gridEl = document.getElementById("grid");
 ["hihat","snare","kick"].forEach(inst=>{
   const row = [];
