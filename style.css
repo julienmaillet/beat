@@ -46,6 +46,10 @@ body {
   background-color: #bbb;
 }
 
+.step.groupStart.active {
+  background-color: #ffcc00; /* couleur jaune quand activé */
+}
+
 /* Pads carrés */
 .pad {
   width: calc((100% - 80px) / 16 * 3); /* environ 3 steps de largeur */
