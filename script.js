@@ -81,7 +81,7 @@ function play(inst){
 function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 1500 : 1000;
+  osc.frequency.value = strong ? 2000 : 1000;
   gain.gain.value = strong ? 0.3 : 0.15;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
