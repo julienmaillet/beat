@@ -52,3 +52,7 @@ body {
   text-align: center;
   line-height: 60px;  /* pour centrer le texte verticalement */
 }
+
+.row .step:nth-child(4n+1) {
+  background: #bbb; /* un peu plus foncé que #ddd */
+}
