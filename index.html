@@ -97,18 +97,25 @@ function clickSound(strong=false){
 function tick(){
   try{
     grid.flat().forEach(s=>s.classList.remove('playing'));
+
     grid.forEach(row=>{
       const step = row[currentStep];
-      const inst = row[currentStep]?.dataset.inst;
       if(step){
         step.classList.add('playing');
-        if(step.classList.contains('active') && inst) playSound(inst);
+        const inst = step.dataset.inst;
+        if(step.classList.contains('active') && inst){
+          playSound(inst);
+        }
       }
     });
+
+    // Métronome accentué sur le premier temps
     if(metronomeOn){
       clickSound(currentStep % 4 === 0);
     }
-    currentStep = (currentStep+1)%16;
+
+    currentStep = (currentStep + 1) % 16;
+
   }catch(e){ console.error("Erreur tick:",e); }
 }
 
