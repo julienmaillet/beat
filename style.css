@@ -30,3 +30,12 @@ body {
 .step.playing {
   outline: 2px solid black;
 }
+
+.pad {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 5px;
+  border: none;
+  background: #ffcc00;
+  cursor: pointer;
+}
