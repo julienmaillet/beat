@@ -36,7 +36,7 @@ Promise.all(
   Object.entries(instruments).map(([k,v]) => loadSound(k,v))
 ).then(()=>console.log("Sons chargés"));
 
-// --- Création de la grille (nouvel ordre et labels) ---
+// --- Création de la grille (nouvel ordre, labels, groupeStart) ---
 const gridEl = document.getElementById("grid");
 ["hihat","snare","kick"].forEach(inst=>{
   const row = [];
@@ -52,6 +52,10 @@ const gridEl = document.getElementById("grid");
   for(let i=0;i<16;i++){
     const step = document.createElement("div");
     step.className = "step";
+
+    // couleur plus foncée pour le premier step de chaque groupe de 4
+    if(i % 4 === 0) step.classList.add("groupStart");
+
     step.dataset.inst = inst;
 
     step.onclick = () => {
@@ -67,7 +71,7 @@ const gridEl = document.getElementById("grid");
   grid.push(row);
 });
 
-// --- Jouer un son (sécurisé) ---
+// --- Jouer un son ---
 function play(inst){
   const buf = buffers[inst];
   if(!buf) return;
@@ -81,7 +85,7 @@ function play(inst){
 function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 2000 : 1000;
+  osc.frequency.value = strong ? 2000 : 1000; // plus aigu sur premier temps
   gain.gain.value = strong ? 0.3 : 0.15;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
@@ -89,7 +93,7 @@ function clickSound(strong=false){
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// --- Tick séquenceur sécurisé (pulsation par groupe de 4 cases) ---
+// --- Tick séquenceur sécurisé ---
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
 
