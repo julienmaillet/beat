@@ -90,3 +90,17 @@ body {
 .step.correct {
   background-color: #4CAF50 !important; /* vert pour le pattern correct */
 }
+
+#successMsg {
+  position: absolute; /* au-dessus du contenu */
+  top: 100px;         /* ajuster selon l'endroit où tu veux le message */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: bold;
+  color: green;
+  background: rgba(255, 255, 255, 0.9); /* léger fond blanc semi-transparent */
+  padding: 8px 12px;
+  border-radius: 5px;
+  z-index: 1000;      /* pour qu’il soit au-dessus */
+}
