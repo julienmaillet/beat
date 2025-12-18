@@ -47,8 +47,9 @@ body {
 }
 
 .pad {
-  width: 60px;
-  height: 60px;
+  width: 18%;          /* environ 3 pas sur 16 → 18% */
+  max-width: 80px;     /* pour ne pas dépasser */
+  aspect-ratio: 1;     /* carré */
   margin-right: 10px;
   border-radius: 5px;
   border: none;
