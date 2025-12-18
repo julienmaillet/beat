@@ -1,97 +1,43 @@
-/* ===============================
-   🔧 EXERCICE
-   =============================== */
-const EXERCISE = {
-  title: "Backbeat",
-  instruction: "Place la snare sur les temps 2 et 4",
-  expectedPattern: {
-    kick: [
-      true,false,false,false,
-      true,false,false,false,
-      true,false,false,false,
-      true,false,false,false
-    ],
-    snare: [
-      false,false,false,false,
-      true,false,false,false,
-      false,false,false,false,
-      true,false,false,false
-    ],
-    hihat: [
-      true,true,true,true,
-      true,true,true,true,
-      true,true,true,true,
-      true,true,true,true
-    ]
-  }
-};
-
-/* ===============================
-   ⚙️ MOTEUR
-   =============================== */
-document.getElementById("instruction").innerHTML =
-  `<strong>${EXERCISE.title}</strong> – ${EXERCISE.instruction}`;
-
-const audioCtx = new AudioContext();
-let isPlaying = false, currentStep = 0, timer;
-
-const tempoSlider = document.getElementById("tempo");
-const bpmLabel = document.getElementById("bpm");
-const playBtn = document.getElementById("play");
-const result = document.getElementById("result");
-
-// Activation AudioContext au premier clic
-document.body.addEventListener("click", () => {
-  if(audioCtx.state === "suspended") audioCtx.resume();
-}, { once: true });
-
-/* ===============================
-   🔊 SONS EXTERNES
-   =============================== */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const instruments = {
-  kick: { file: "sounds/kick.wav", buffer: null },
-  snare: { file: "sounds/snare.wav", buffer: null },
-  hihat: { file: "sounds/hihat.wav", buffer: null }
+  kick: { file:"sounds/kick.wav", buffer:null },
+  snare: { file:"sounds/snare.wav", buffer:null },
+  hihat: { file:"sounds/hihat.wav", buffer:null }
 };
 
-// Charger les sons
-for (const inst in instruments) {
-  fetch(instruments[inst].file)
-    .then(r => r.arrayBuffer())
-    .then(b => audioCtx.decodeAudioData(b))
-    .then(buf => instruments[inst].buffer = buf)
-    .catch(err => console.error(inst,"erreur",err));
+const gridContainer = document.getElementById("gridContainer");
+let grid = [];
+let currentStep = 0;
+let interval = null;
+let metronomeOn = true;
+
+// --- Préchargement des sons ---
+for(const key in instruments){
+  fetch(instruments[key].file)
+    .then(r=>r.arrayBuffer())
+    .then(b=>audioCtx.decodeAudioData(b))
+    .then(buf=>{ instruments[key].buffer = buf; console.log(key,"chargé") })
+    .catch(err=>console.error(key,"erreur",err));
 }
 
-/* ===============================
-   🔲 GRILLE
-   =============================== */
-const rows = document.querySelectorAll(".row");
-const grid = [];
-
-rows.forEach((row,r) => {
-  const inst = row.dataset.inst;
-  const stepsDiv = row.querySelector(".steps");
-  grid[r] = [];
-
+// --- Création de la grille ---
+['kick','snare','hihat'].forEach(inst=>{
+  const row = [];
+  const divRow = document.createElement('div');
+  divRow.className='row';
   for(let i=0;i<16;i++){
-    const step = document.createElement("div");
-    step.className = `step ${inst}`;
-    if(i%4===0) step.classList.add("group-start");
-
-    step.onclick = () => {
-      step.classList.toggle("active");
-      playSound(inst);
-    };
-
-    stepsDiv.appendChild(step);
-    grid[r].push(step);
+    const step = document.createElement('div');
+    step.className='step';
+    step.dataset.inst = inst;
+    step.addEventListener('click',()=>step.classList.toggle('active'));
+    divRow.appendChild(step);
+    row.push(step);
   }
+  gridContainer.appendChild(divRow);
+  grid.push(row);
 });
 
-/* ===============================
-   🎵 PLAY SOUND
-   =============================== */
+// --- Play sound ---
 function playSound(inst){
   const buf = instruments[inst].buffer;
   if(!buf) return;
@@ -101,110 +47,61 @@ function playSound(inst){
   src.start();
 }
 
-/* ===============================
-   ⏱ SEQUENCEUR
-   =============================== */
-function tick(){
-  grid.flat().forEach(s => s.classList.remove("playing"));
-  grid.forEach((row,r)=>{
-    const step = row[currentStep];
-    step.classList.add("playing");
-    if(step.classList.contains("active")) playSound(row.dataset.inst);
-  });
-  currentStep = (currentStep + 1) % 16;
-}
-
-playBtn.onclick = () => {
-  if(isPlaying){
-    clearInterval(timer);
-    playBtn.textContent = "▶️ Play";
-    isPlaying = false;
-    return;
-  }
-  const bpm = +tempoSlider.value;
-  const interval = (60/bpm)*1000/4;
-  currentStep = 0;
-  timer = setInterval(tick, interval);
-  playBtn.textContent = "⏹ Stop";
-  isPlaying = true;
-};
-
-tempoSlider.oninput = () => bpmLabel.textContent = tempoSlider.value;
-
-/* ===============================
-   ✅ VALIDATION
-   =============================== */
-document.getElementById("check").onclick = () => {
-  const student = {};
-  rows.forEach((row,r)=> student[row.dataset.inst] = grid[r].map(s => s.classList.contains("active")));
-  let ok = true;
-  for(let inst in EXERCISE.expectedPattern){
-    for(let i=0;i<16;i++){
-      if(student[inst][i] !== EXERCISE.expectedPattern[inst][i]){
-        ok = false; break;
-      }
-    }
-  }
-  result.textContent = ok ? "✅ Bravo ! Pattern correct" : "❌ Ce n’est pas encore ça";
-  result.style.color = ok ? "green" : "red";
-};
-
-/* ===============================
-   🥁 PADS
-   =============================== */
-const pads = document.querySelectorAll(".pad");
-
-pads.forEach(pad => {
-  pad.addEventListener("pointerdown", ()=> triggerPad(pad,pad.dataset.inst));
-});
-
-document.addEventListener("keydown", e => {
-  if(e.repeat) return;
-  if(e.key==="s") triggerPad(document.querySelector(".pad.kick"), "kick");
-  if(e.key==="d") triggerPad(document.querySelector(".pad.snare"), "snare");
-  if(e.key==="f") triggerPad(document.querySelector(".pad.hihat"), "hihat");
-});
-
-function triggerPad(pad, inst){
-  playSound(inst);
-  pad.classList.add("active");
-  setTimeout(()=> pad.classList.remove("active"), 120);
-}
-
-/* ===============================
-   ⏱ MÉTRONOME
-   =============================== */
-let metronomeOn = false, metroTimer = null;
-const metroBtn = document.getElementById("metronomeBtn");
-
-function clickSound(){
+// --- Métronome ---
+function clickSound(strong=false){
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.frequency.value = 1200;
-  gain.gain.value = 0.2;
+  osc.frequency.value = strong ? 1500 : 1000;
+  gain.gain.value = strong ? 0.3 : 0.15;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-metroBtn.onclick = () => {
-  metronomeOn = !metronomeOn;
-  metroBtn.classList.toggle("active", metronomeOn);
-  metroBtn.textContent = metronomeOn ? "⏹ Clic" : "🟢 Clic";
-  if(metronomeOn) startMetronome(); else stopMetronome();
-};
+// --- Tick séquenceur corrigé ---
+function tick(){
+  try{
+    grid.flat().forEach(s=>s.classList.remove('playing'));
 
-function startMetronome(){
-  stopMetronome();
-  const bpm = +tempoSlider.value;
-  const interval = (60/bpm)*1000;
-  metroTimer = setInterval(clickSound, interval);
+    grid.forEach(row=>{
+      const step = row[currentStep];
+      if(step){
+        step.classList.add('playing');
+        const inst = step.dataset.inst;
+        if(step.classList.contains('active') && inst){
+          playSound(inst);
+        }
+      }
+    });
+
+    if(metronomeOn){
+      clickSound(currentStep % 4 === 0);
+    }
+
+    currentStep = (currentStep + 1) % 16;
+
+  }catch(e){ console.error("Erreur tick:",e); }
 }
 
-function stopMetronome(){
-  clearInterval(metroTimer);
-  metroTimer = null;
-}
+// --- Start/Stop ---
+document.getElementById('startStop').addEventListener('click',()=>{
+  if(interval){
+    clearInterval(interval); interval=null;
+  } else {
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const bpm = parseInt(document.getElementById('tempo').value);
+    const ms = (60/bpm/4)*1000;
+    interval = setInterval(tick, ms);
+  }
+});
 
-tempoSlider.addEventListener("input", ()=> { if(metronomeOn) startMetronome(); });
+// --- Pads clavier ---
+document.querySelectorAll('.pad').forEach(p=>{
+  p.addEventListener('click',()=>playSound(p.dataset.inst));
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='s') playSound('kick');
+  if(e.key==='d') playSound('snare');
+  if(e.key==='f') playSound('hihat');
+});
