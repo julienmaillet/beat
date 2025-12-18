@@ -1,116 +1,90 @@
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const instruments = {
-  kick: { file:"sounds/kick.wav", buffer:null },
-  snare: { file:"sounds/snare.wav", buffer:null },
-  hihat: { file:"sounds/hihat.wav", buffer:null }
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+const sounds = {
+  kick: "sounds/kick.wav",
+  snare: "sounds/snare.wav",
+  hihat: "sounds/hihat.wav"
 };
 
-const gridContainer = document.getElementById("gridContainer");
+const buffers = {};
 let grid = [];
-let currentStep = 0;
-let interval = null;
-let metronomeOn = true;
+let stepIndex = 0;
+let timer = null;
 
-// --- Préchargement des sons ---
-for(const key in instruments){
-  fetch(instruments[key].file)
-    .then(r=>r.arrayBuffer())
-    .then(b=>audioCtx.decodeAudioData(b))
-    .then(buf=>{ instruments[key].buffer = buf; console.log(key,"chargé") })
-    .catch(err=>console.error(key,"erreur",err));
+const gridEl = document.getElementById("grid");
+
+// ---- Chargement des sons
+async function loadSound(name, url) {
+  const res = await fetch(url);
+  const buf = await res.arrayBuffer();
+  buffers[name] = await audioCtx.decodeAudioData(buf);
 }
 
-// --- Création de la grille 16 pas x 3 lignes ---
-['kick','snare','hihat'].forEach(inst=>{
+Promise.all(
+  Object.entries(sounds).map(([k,v]) => loadSound(k,v))
+).then(() => console.log("Sons chargés"));
+
+// ---- Création grille
+["kick","snare","hihat"].forEach(inst => {
   const row = [];
-  const divRow = document.createElement('div');
-  divRow.className='row';
+  const rowEl = document.createElement("div");
+  rowEl.className = "row";
+
   for(let i=0;i<16;i++){
-    const step = document.createElement('div');
-    step.className='step';
+    const step = document.createElement("div");
+    step.className = "step";
     step.dataset.inst = inst;
-    step.addEventListener('click',()=>step.classList.toggle('active'));
-    divRow.appendChild(step);
+
+    step.onclick = () => {
+      step.classList.toggle("active");
+      play(inst); // feedback immédiat
+    };
+
+    rowEl.appendChild(step);
     row.push(step);
   }
-  gridContainer.appendChild(divRow);
+
+  gridEl.appendChild(rowEl);
   grid.push(row);
 });
 
-// --- Play sound ---
-function playSound(inst){
-  const buf = instruments[inst].buffer;
-  if(!buf) return;
+// ---- Jouer un son
+function play(inst){
+  if(!buffers[inst]) return;
   const src = audioCtx.createBufferSource();
-  src.buffer = buf;
+  src.buffer = buffers[inst];
   src.connect(audioCtx.destination);
   src.start();
 }
 
-// --- Métronome ---
-function clickSound(strong=false){
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.value = strong ? 1500 : 1000;
-  gain.gain.value = strong ? 0.3 : 0.15;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.05);
-}
-
-// --- Tick séquenceur sécurisé ---
+// ---- Séquenceur
 function tick(){
-  try {
-    grid.flat().forEach(s => s.classList.remove('playing'));
+  grid.flat().forEach(s => s.classList.remove("playing"));
 
-    grid.forEach(row=>{
-      const step = row[currentStep];
-      if(step){
-        step.classList.add('playing');
-        const inst = step.dataset.inst; // <- Récupération correcte depuis step
-        if(step.classList.contains('active') && inst && instruments[inst].buffer){
-          playSound(inst);
-        }
-      }
-    });
+  grid.forEach(row => {
+    const step = row[stepIndex];
+    step.classList.add("playing");
 
-    if(metronomeOn){
-      clickSound(currentStep % 4 === 0);
+    if(step.classList.contains("active")){
+      play(step.dataset.inst);
     }
+  });
 
-    currentStep = (currentStep + 1) % 16;
-
-  } catch(e){
-    console.error("Erreur tick:", e);
-  }
+  stepIndex = (stepIndex + 1) % 16;
 }
 
-// --- Start/Stop avec reprise du AudioContext si nécessaire ---
-document.getElementById('startStop').addEventListener('click',()=>{
-  if(interval){
-    clearInterval(interval); interval=null;
-  } else {
-    if(audioCtx.state==='suspended'){
-      audioCtx.resume().then(()=> startSequencer());
-    } else {
-      startSequencer();
-    }
+// ---- Play
+document.getElementById("play").onclick = () => {
+  if(timer){
+    clearInterval(timer);
+    timer = null;
+    return;
   }
-});
 
-function startSequencer(){
-  const bpm = parseInt(document.getElementById('tempo').value);
-  const ms = (60/bpm/4)*1000; // double croche
-  interval = setInterval(tick, ms);
-}
+  audioCtx.resume();
 
-// --- Pads clavier et clic ---
-document.querySelectorAll('.pad').forEach(p=>{
-  p.addEventListener('click',()=>playSound(p.dataset.inst));
-});
-document.addEventListener('keydown',e=>{
-  if(e.key==='s') playSound('kick');
-  if(e.key==='d') playSound('snare');
-  if(e.key==='f') playSound('hihat');
-});
+  const bpm = +document.getElementById("tempo").value;
+  const interval = (60 / bpm / 4) * 1000;
+  timer = setInterval(tick, interval);
+};
