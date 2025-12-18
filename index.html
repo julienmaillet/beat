@@ -39,6 +39,7 @@ const instruments = {
   snare: { file:"sounds/snare.wav", buffer:null },
   hihat: { file:"sounds/hihat.wav", buffer:null }
 };
+
 const gridContainer = document.getElementById("gridContainer");
 let grid = [];
 let currentStep = 0;
@@ -93,7 +94,7 @@ function clickSound(strong=false){
   osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// --- Tick séquenceur ---
+// --- Tick séquenceur corrigé ---
 function tick(){
   try{
     grid.flat().forEach(s=>s.classList.remove('playing'));
@@ -109,7 +110,6 @@ function tick(){
       }
     });
 
-    // Métronome accentué sur le premier temps
     if(metronomeOn){
       clickSound(currentStep % 4 === 0);
     }
@@ -126,7 +126,7 @@ document.getElementById('startStop').addEventListener('click',()=>{
   } else {
     if(audioCtx.state==='suspended') audioCtx.resume();
     const bpm = parseInt(document.getElementById('tempo').value);
-    const ms = (60/bpm/4)*1000; // double croche
+    const ms = (60/bpm/4)*1000;
     interval = setInterval(tick, ms);
   }
 });
