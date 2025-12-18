@@ -16,8 +16,8 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav", // premier temps du groupe
-  soft: "sounds/click_soft.wav"      // optionnel pour autres temps
+  strong: "sounds/click_strong.wav", // premier pas du groupe
+  soft: "sounds/click_soft.wav"      // les autres temps
 };
 const metronomeBuffers = {};
 
@@ -103,17 +103,6 @@ function play(inst){
   src.start();
 }
 
-// --- Jouer un son de métronome ---
-function clickSound(strong=false){
-  const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
-  if(!buf) return;
-
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  src.connect(audioCtx.destination);
-  src.start();
-}
-
 // --- Tick séquenceur ---
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
@@ -130,9 +119,16 @@ function tick(){
     }
   });
 
-  // Métronome : uniquement premier pas du groupe de 4
-  if(metronomeOn && stepIndex % 4 === 0){
-    clickSound(true); // clic fort
+  // Métronome : jouer sur tous les temps
+  if(metronomeOn){
+    const strong = stepIndex % 4 === 0; // vrai pour premier pas du groupe
+    const buf = strong ? metronomeBuffers.strong : metronomeBuffers.soft;
+    if(buf){
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(audioCtx.destination);
+      src.start();
+    }
   }
 
   stepIndex = (stepIndex + 1) % 16;
@@ -204,7 +200,7 @@ function checkPattern() {
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
-    msg.textContent = "Bravo ! Pattern correct 🎉";
+    msg.textContent = "Bravo !";
     controlsDiv.appendChild(msg);
   }
 
