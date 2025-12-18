@@ -180,7 +180,7 @@ if(metronomeBtn){
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [0,0,1,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
   snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
   hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
