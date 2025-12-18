@@ -39,12 +39,16 @@ body {
 }
 
 .pad {
-  padding: 15px 25px;
+  width: 60px;       /* carré fixe */
+  height: 60px;      /* carré fixe */
+  padding: 0;        /* enlever le padding pour garder le carré */
   margin: 5px;
-  border-radius: 10px;
+  border-radius: 5px; /* coins légèrement arrondis si tu veux */
   border: none;
   background: #ffcc00;
   cursor: pointer;
   font-weight: bold;
   display: inline-block;
+  text-align: center;
+  line-height: 60px;  /* pour centrer le texte verticalement */
 }
