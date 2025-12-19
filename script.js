@@ -13,7 +13,7 @@ const buffers = {};
 let grid = [];
 let stepIndex = 0;
 let timer = null;
-let metronomeOn = true;
+let metronomeOn = false; // Métronome OFF par défaut
 
 // --- Sons du métronome ---
 const metronomeSounds = {
@@ -82,11 +82,9 @@ const gridEl = document.getElementById("grid");
       step.classList.toggle("active");
       // Remettre couleur si désactivé
       if(!step.classList.contains("active")){
-        if(step.classList.contains("groupStart")){
-          step.style.background = "#bdbdbd";
-        } else {
-          step.style.background = "#ddd";
-        }
+        step.style.background = step.classList.contains("groupStart") ? "#bdbdbd" : "#ddd";
+      } else {
+        step.style.background = "#ffcc00"; // actif
       }
       play(step.dataset.inst);
       checkPatterns();
@@ -116,12 +114,11 @@ for(let i=0;i<16;i++){
 
 gridEl.appendChild(timeRowEl);
 
-// --- Div pour afficher les patterns validés ---
-const patternMessage = document.createElement("div");
-patternMessage.id = "patternMessage";
-patternMessage.style.marginTop = "15px";
-patternMessage.style.fontWeight = "bold";
-gridEl.parentNode.insertBefore(patternMessage, gridEl.nextSibling);
+// --- Conteneur pour afficher les patterns validés ---
+const patternContainer = document.createElement("div");
+patternContainer.id = "patternContainer";
+patternContainer.style.marginTop = "15px";
+gridEl.parentNode.insertBefore(patternContainer, gridEl.nextSibling);
 
 // --- Jouer un son instrument ---
 function play(inst){
@@ -171,6 +168,14 @@ function tick(){
 // --- Validation des patterns ---
 function checkPatterns(){
   const validPatterns = [];
+  
+  // D'abord, retirer toutes les validations précédentes
+  grid.forEach(row => {
+    row.forEach(step => {
+      step.classList.remove("patternValidated");
+      step.style.outlineColor = "";
+    });
+  });
 
   patterns.forEach(pattern => {
     let linesToCheck = [];
@@ -188,44 +193,38 @@ function checkPatterns(){
       const allStepsActive = pattern.steps.every(idx => row[idx].classList.contains("active"));
       if(allStepsActive){
         patternFound = true;
-        // Colorer les cases
+        // Marquer les cases avec outline pour ne pas bloquer la couleur de fond
         pattern.steps.forEach(idx => {
-          row[idx].style.background = pattern.color;
+          row[idx].classList.add("patternValidated");
+          row[idx].style.outline = `2px solid ${pattern.color}`;
+          row[idx].style.outlineOffset = "-2px";
         });
         break;
       }
     }
 
     if(patternFound){
-      validPatterns.push(pattern.name);
-    } else {
-      // Si pattern non trouvé, remettre couleur par défaut
-      linesToCheck.forEach(row => {
-        pattern.steps.forEach(idx => {
-          const step = row[idx];
-          if(step.classList.contains("active")){
-            step.style.background = "#ffcc00";
-          } else if(step.classList.contains("groupStart")){
-            step.style.background = "#bdbdbd";
-          } else {
-            step.style.background = "#ddd";
-          }
-        });
-      });
+      validPatterns.push(pattern);
     }
   });
 
-  patternMessage.textContent = validPatterns.length > 0
-    ? "Pattern(s) validé(s) : " + validPatterns.join(", ")
-    : "";
+  // Afficher les patterns validés sur des lignes séparées
+  patternContainer.innerHTML = "";
+  validPatterns.forEach(p => {
+    const div = document.createElement("div");
+    div.textContent = p.name;
+    div.style.color = p.color;
+    div.style.fontWeight = "bold";
+    patternContainer.appendChild(div);
+  });
 }
 
 // --- Bouton Métronome ---
-document.getElementById("metronomeBtn").onclick = () => {
+const metBtn = document.getElementById("metronomeBtn");
+metBtn.textContent = "Métronome Off";
+metBtn.onclick = () => {
   metronomeOn = !metronomeOn;
-  document.getElementById("metronomeBtn").textContent = metronomeOn
-    ? "Métronome On"
-    : "Métronome Off";
+  metBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
 };
 
 // --- Démarrage / arrêt séquenceur ---
