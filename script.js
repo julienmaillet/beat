@@ -136,6 +136,7 @@ function tick(){
   stepIndex = (stepIndex + 1) % 16;
 }
 
+// --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
@@ -144,20 +145,20 @@ metronomeBtn.onclick = () => {
     : "Métronome Off";
 };
 
+// --- Démarrage / arrêt séquenceur ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
     clearInterval(timer);
     timer = null;
     return;
   }
-
   if(audioCtx.state === "suspended") audioCtx.resume();
-
   const bpm = +document.getElementById("tempo").value;
   const interval = (60/bpm/4)*1000;
   timer = setInterval(tick, interval);
 };
 
+// --- Pads clic + clavier ---
 document.querySelectorAll(".pad").forEach(p=>{
   p.onclick = ()=>play(p.dataset.inst);
 });
@@ -172,18 +173,19 @@ document.addEventListener("keydown", e=>{
   }
 });
 
+// --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => pad.classList.add("pressed"));
-  pad.addEventListener("mouseup", () => pad.classList.remove("pressed"));
-  pad.addEventListener("mouseleave", () => pad.classList.remove("pressed"));
-  pad.addEventListener("touchstart", () => pad.classList.add("pressed"));
-  pad.addEventListener("touchend", () => pad.classList.remove("pressed"));
+  pad.addEventListener("mousedown", () => { pad.classList.add("pressed"); });
+  pad.addEventListener("mouseup", () => { pad.classList.remove("pressed"); });
+  pad.addEventListener("mouseleave", () => { pad.classList.remove("pressed"); });
+  pad.addEventListener("touchstart", () => { pad.classList.add("pressed"); });
+  pad.addEventListener("touchend", () => { pad.classList.remove("pressed"); });
 });
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
-  // snare et hihat libres
+  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
 };
 
 function checkPattern() {
@@ -192,8 +194,8 @@ function checkPattern() {
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
-    if(!correctPattern[inst]) return;
-    
+    if (!correctPattern[inst]) return;
+
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
@@ -203,6 +205,15 @@ function checkPattern() {
     });
   });
 
+  const controlsDiv = document.getElementById("controls");
+  let msg = document.getElementById("successMsg");
+  if(!msg){
+    msg = document.createElement("div");
+    msg.id = "successMsg";
+    msg.textContent = "Bravo !";
+    controlsDiv.appendChild(msg);
+  }
+
   if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
@@ -211,5 +222,8 @@ function checkPattern() {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
+    msg.style.display = "block";
+  } else {
+    msg.style.display = "none";
   }
 }
