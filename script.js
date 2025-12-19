@@ -6,9 +6,7 @@ const instruments = {
   hihat: "sounds/hihat.wav",
   snare: "sounds/snare.wav",
   kick: "sounds/kick.wav"
- 
 };
-
 
 const buffers = {};
 let grid = [];
@@ -195,7 +193,6 @@ document.querySelectorAll(".pad").forEach(pad => {
     pad.classList.remove("pressed");
   });
 
-  // pour le tactile (tablettes / smartphones)
   pad.addEventListener("touchstart", () => {
     pad.classList.add("pressed");
   });
@@ -216,17 +213,19 @@ function checkPattern() {
   let ok = true;
 
   grid.forEach(row => {
-    const inst = row[0].dataset.inst;
+    // prendre le premier pas réel (pas le label)
+    const firstStep = row.find(step => step.dataset && step.dataset.inst);
+    const inst = firstStep?.dataset.inst;
 
     // IGNORER les instruments non évalués
     if (!correctPattern[inst]) return;
-    
+
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
-      step.classList.remove("correct");
+      step.classList.remove("correct"); // réinitialisation
     });
   });
 
@@ -236,8 +235,8 @@ function checkPattern() {
     msg = document.createElement("div");
     msg.id = "successMsg";
     msg.textContent = "Bravo !";
-    msg.style.position = "absolute"; // <-- pour ne pas décaler le layout
-    msg.style.top = "50px";           // ajuster si nécessaire
+    msg.style.position = "absolute"; // ne pas décaler le layout
+    msg.style.top = "50px";
     msg.style.left = "50%";
     msg.style.transform = "translateX(-50%)";
     msg.style.fontWeight = "bold";
@@ -247,7 +246,10 @@ function checkPattern() {
 
   if(ok){
     grid.forEach(row => {
-      const inst = row[0].dataset.inst;
+      const firstStep = row.find(step => step.dataset && step.dataset.inst);
+      const inst = firstStep?.dataset.inst;
+      if (!correctPattern[inst]) return;
+
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
