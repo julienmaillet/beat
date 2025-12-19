@@ -202,39 +202,3 @@ document.querySelectorAll(".pad").forEach(pad => {
     pad.classList.remove("pressed");
   });
 });
-
-// --- Validation automatique du pattern ---
-const correctPattern = {
-  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
-  // hihat non évalué → ignoré
-};
-
-function checkPattern() {
-  let ok = true;
-
-  grid.forEach(row => {
-    const inst = row[0].dataset.inst;
-
-    // IGNORER les instruments non évalués
-    if (!correctPattern[inst]) return;
-    
-    row.forEach((step, i) => {
-      const shouldBeActive = !!correctPattern[inst][i];
-      if(step.classList.contains("active") !== shouldBeActive){
-        ok = false;
-      }
-      step.classList.remove("correct");
-    });
-  });
-
-  if(ok){
-    grid.forEach(row => {
-      const inst = row[0].dataset.inst;
-      if(!correctPattern[inst]) return;
-      row.forEach((step, i) => {
-        if(correctPattern[inst][i]) step.classList.add("correct");
-      });
-    });
-  }
-}
