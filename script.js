@@ -46,7 +46,7 @@ loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
-["kick","snare","hihat"].forEach(inst=>{
+["hihat", "snare", "kick"].forEach(inst=>{
   const row = [];
   const rowEl = document.createElement("div");
   rowEl.className = "row";
