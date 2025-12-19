@@ -16,8 +16,8 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav",
-  soft: "sounds/click_soft.wav"
+  strong: "sounds/click_strong.wav", // pas 1
+  soft: "sounds/click_soft.wav"      // pas 5, 9, 13
 };
 const metronomeBuffers = {};
 
@@ -49,6 +49,7 @@ const gridEl = document.getElementById("grid");
   const rowEl = document.createElement("div");
   rowEl.className = "row";
 
+  // Label à gauche
   const label = document.createElement("div");
   label.className = "rowLabel";
   label.textContent = inst;
@@ -58,7 +59,7 @@ const gridEl = document.getElementById("grid");
     const step = document.createElement("div");
     step.className = "step";
 
-    if(i % 4 === 0) step.classList.add("groupStart");
+    if(i % 4 === 0) step.classList.add("groupStart"); // <-- premier pas du groupe
 
     step.dataset.inst = inst;
 
@@ -118,6 +119,7 @@ function tick(){
     }
   });
 
+  // Métronome : click_strong sur pas 0, click_soft sur 4, 8, 12
   if(metronomeOn){
     let buf = null;
     if(stepIndex === 0){
@@ -138,6 +140,7 @@ function tick(){
 
 // --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
+
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
   metronomeBtn.textContent = metronomeOn
@@ -152,7 +155,9 @@ document.getElementById("play").onclick = ()=>{
     timer = null;
     return;
   }
+
   if(audioCtx.state === "suspended") audioCtx.resume();
+
   const bpm = +document.getElementById("tempo").value;
   const interval = (60/bpm/4)*1000;
   timer = setInterval(tick, interval);
@@ -167,6 +172,7 @@ document.addEventListener("keydown", e=>{
   if(e.key === "s") play("kick");
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
+
   if(e.code === "Space"){
     e.preventDefault();
     document.getElementById("play").click();
@@ -175,53 +181,72 @@ document.addEventListener("keydown", e=>{
 
 // --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => { pad.classList.add("pressed"); });
-  pad.addEventListener("mouseup", () => { pad.classList.remove("pressed"); });
-  pad.addEventListener("mouseleave", () => { pad.classList.remove("pressed"); });
-  pad.addEventListener("touchstart", () => { pad.classList.add("pressed"); });
-  pad.addEventListener("touchend", () => { pad.classList.remove("pressed"); });
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
 });
 
-// --- Validation automatique du pattern ---
+// --- Validation automatique du pattern combinatoire ---
 const correctPattern = {
-  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
+  // snare et hihat sont libres
 };
 
 function checkPattern() {
   let ok = true;
 
-  grid.forEach(row => {
-    const inst = row[0].dataset.inst;
-
-    if (!correctPattern[inst]) return;
-
+  // vérifier chaque instrument évalué
+  for(const inst in correctPattern){
+    const row = grid.find(r => r[0].dataset.inst === inst);
     row.forEach((step, i) => {
-      const shouldBeActive = !!correctPattern[inst][i];
-      if(step.classList.contains("active") !== shouldBeActive){
+      if(step.classList.contains("active") !== !!correctPattern[inst][i]){
         ok = false;
       }
       step.classList.remove("correct");
     });
-  });
+  }
 
+  // créer / afficher message Bravo
   const controlsDiv = document.getElementById("controls");
   let msg = document.getElementById("successMsg");
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
     msg.textContent = "Bravo !";
+    msg.style.position = "absolute"; // pour ne pas décaler le layout
+    msg.style.top = "50px";           
+    msg.style.left = "50%";
+    msg.style.transform = "translateX(-50%)";
+    msg.style.fontWeight = "bold";
+    msg.style.color = "#2e7d32";
     controlsDiv.appendChild(msg);
   }
 
   if(ok){
-    grid.forEach(row => {
-      const inst = row[0].dataset.inst;
-      if(!correctPattern[inst]) return;
+    // dès que le pattern complet est correct, colorer tous les pas évalués
+    for(const inst in correctPattern){
+      const row = grid.find(r => r[0].dataset.inst === inst);
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
-    });
+    }
     msg.style.display = "block";
   } else {
     msg.style.display = "none";
