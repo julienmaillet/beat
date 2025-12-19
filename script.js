@@ -16,23 +16,18 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav",
-  soft: "sounds/click_soft.wav"
+  strong: "sounds/click_strong.wav", // pas 1
+  soft: "sounds/click_soft.wav"      // pas 5, 9, 13
 };
 const metronomeBuffers = {};
 
-// --- Charger les sons instruments ---
+// --- Charger tous les sons ---
 async function loadSound(name, url){
   const res = await fetch(url);
   const arrayBuffer = await res.arrayBuffer();
   buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-Promise.all(
-  Object.entries(instruments).map(([k,v]) => loadSound(k,v))
-);
-
-// --- Charger les sons du métronome ---
 async function loadMetronomeSounds(){
   for(let key in metronomeSounds){
     const res = await fetch(metronomeSounds[key]);
@@ -40,7 +35,12 @@ async function loadMetronomeSounds(){
     metronomeBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
   }
 }
-loadMetronomeSounds();
+
+Promise.all(
+  Object.entries(instruments).map(([k,v]) => loadSound(k,v))
+).then(()=>console.log("Sons instruments chargés"));
+
+loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
@@ -49,6 +49,7 @@ const gridEl = document.getElementById("grid");
   const rowEl = document.createElement("div");
   rowEl.className = "row";
 
+  // Label à gauche
   const label = document.createElement("div");
   label.className = "rowLabel";
   label.textContent = inst;
@@ -57,7 +58,8 @@ const gridEl = document.getElementById("grid");
   for(let i=0;i<16;i++){
     const step = document.createElement("div");
     step.className = "step";
-    if(i % 4 === 0) step.classList.add("groupStart");
+
+    if(i % 4 === 0) step.classList.add("groupStart"); // <-- premier pas du groupe
 
     step.dataset.inst = inst;
 
@@ -75,7 +77,23 @@ const gridEl = document.getElementById("grid");
   grid.push(row);
 });
 
-// --- Jouer un son ---
+// --- Ligne des chiffres sous la grille ---
+const timeRowEl = document.createElement("div");
+timeRowEl.className = "timeRow";
+const emptyLabel = document.createElement("div");
+timeRowEl.appendChild(emptyLabel);
+
+for(let i=0;i<16;i++){
+  const div = document.createElement("div");
+  if(i % 4 === 0){
+    div.textContent = (i/4 + 1);
+  }
+  timeRowEl.appendChild(div);
+}
+
+gridEl.appendChild(timeRowEl);
+
+// --- Jouer un son instrument ---
 function play(inst){
   const buf = buffers[inst];
   if(!buf) return;
@@ -95,11 +113,13 @@ function tick(){
 
     step.classList.add("playing");
 
-    if(step.classList.contains("active")){
-      play(step.dataset.inst);
+    const inst = step.dataset.inst;
+    if(step.classList.contains("active") && inst && buffers[inst]){
+      play(inst);
     }
   });
 
+  // Métronome : click_strong sur pas 0, click_soft sur 4, 8, 12
   if(metronomeOn){
     let buf = null;
     if(stepIndex === 0){
@@ -118,7 +138,17 @@ function tick(){
   stepIndex = (stepIndex + 1) % 16;
 }
 
-// --- Play / Stop ---
+// --- Bouton Métronome On / Off ---
+const metronomeBtn = document.getElementById("metronomeBtn");
+
+metronomeBtn.onclick = () => {
+  metronomeOn = !metronomeOn;
+  metronomeBtn.textContent = metronomeOn
+    ? "Métronome On"
+    : "Métronome Off";
+};
+
+// --- Démarrage / arrêt séquenceur ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
     clearInterval(timer);
@@ -133,19 +163,11 @@ document.getElementById("play").onclick = ()=>{
   timer = setInterval(tick, interval);
 };
 
-// --- Métronome On / Off ---
-const metronomeBtn = document.getElementById("metronomeBtn");
-metronomeBtn.onclick = ()=>{
-  metronomeOn = !metronomeOn;
-  metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
-};
-
-// --- Pads ---
+// --- Pads clic + clavier ---
 document.querySelectorAll(".pad").forEach(p=>{
   p.onclick = ()=>play(p.dataset.inst);
 });
 
-// --- Clavier ---
 document.addEventListener("keydown", e=>{
   if(e.key === "s") play("kick");
   if(e.key === "d") play("snare");
@@ -157,29 +179,47 @@ document.addEventListener("keydown", e=>{
   }
 });
 
-/* ======================================================
-   🎯 DÉFINITION DU PATTERN À VALIDER (SEULE PARTIE À CHANGER)
-   ====================================================== */
+// --- Feedback visuel temporaire sur les pads ---
+document.querySelectorAll(".pad").forEach(pad => {
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
 
-const patternToValidate = {
-  kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
+});
+
+// --- Validation automatique du pattern ---
+const correctPattern = {
+  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
 };
 
-/* ======================================================
-   ✅ VALIDATION GÉNÉRIQUE (NE PLUS TOUCHER)
-   ====================================================== */
-
-function checkPattern(){
+function checkPattern() {
   let ok = true;
 
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
-    // ignorer les instruments non évalués
-    if(!patternToValidate[inst]) return;
-
+    // ⬅️ IGNORER les instruments non évalués
+    if (!correctPattern[inst]) return;
+    
     row.forEach((step, i) => {
-      const shouldBeActive = !!patternToValidate[inst][i];
+      const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
@@ -187,16 +227,26 @@ function checkPattern(){
     });
   });
 
+  // --- Affichage du message Bravo ! sans décaler la page ---
+  const controlsDiv = document.getElementById("controls");
+  let msg = document.getElementById("successMsg");
+  if(!msg){
+    msg = document.createElement("div");
+    msg.id = "successMsg";
+    msg.textContent = "Bravo !";
+    msg.style.display = "none"; // invisible par défaut
+    controlsDiv.appendChild(msg);
+  }
+
   if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
-      if(!patternToValidate[inst]) return;
-
       row.forEach((step, i) => {
-        if(patternToValidate[inst][i]){
-          step.classList.add("correct");
-        }
+        if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
+    msg.style.display = "block";
+  } else {
+    msg.style.display = "none";
   }
 }
