@@ -203,52 +203,38 @@ document.querySelectorAll(".pad").forEach(pad => {
   });
 });
 
-// --- Validation automatique du pattern combinatoire ---
+// --- Validation automatique du pattern ---
 const correctPattern = {
-  kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
-  // snare et hihat sont libres
+  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  // hihat non évalué → ignoré
 };
 
 function checkPattern() {
   let ok = true;
 
-  // vérifier chaque instrument évalué
-  for(const inst in correctPattern){
-    const row = grid.find(r => r[0].dataset.inst === inst);
+  grid.forEach(row => {
+    const inst = row[0].dataset.inst;
+
+    // IGNORER les instruments non évalués
+    if (!correctPattern[inst]) return;
+    
     row.forEach((step, i) => {
-      if(step.classList.contains("active") !== !!correctPattern[inst][i]){
+      const shouldBeActive = !!correctPattern[inst][i];
+      if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
       step.classList.remove("correct");
     });
-  }
-
-  // créer / afficher message Bravo
-  const controlsDiv = document.getElementById("controls");
-  let msg = document.getElementById("successMsg");
-  if(!msg){
-    msg = document.createElement("div");
-    msg.id = "successMsg";
-    msg.textContent = "Bravo !";
-    msg.style.position = "absolute"; // pour ne pas décaler le layout
-    msg.style.top = "50px";           
-    msg.style.left = "50%";
-    msg.style.transform = "translateX(-50%)";
-    msg.style.fontWeight = "bold";
-    msg.style.color = "#2e7d32";
-    controlsDiv.appendChild(msg);
-  }
+  });
 
   if(ok){
-    // dès que le pattern complet est correct, colorer tous les pas évalués
-    for(const inst in correctPattern){
-      const row = grid.find(r => r[0].dataset.inst === inst);
+    grid.forEach(row => {
+      const inst = row[0].dataset.inst;
+      if(!correctPattern[inst]) return;
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
-    }
-    msg.style.display = "block";
-  } else {
-    msg.style.display = "none";
+    });
   }
 }
