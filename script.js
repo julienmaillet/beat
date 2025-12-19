@@ -193,6 +193,7 @@ document.querySelectorAll(".pad").forEach(pad => {
     pad.classList.remove("pressed");
   });
 
+  // pour le tactile (tablettes / smartphones)
   pad.addEventListener("touchstart", () => {
     pad.classList.add("pressed");
   });
@@ -205,57 +206,34 @@ document.querySelectorAll(".pad").forEach(pad => {
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-  snare:  [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
-  // hihat non évalué → ignoré
+  // snare et hihat sont libres
 };
 
 function checkPattern() {
   let ok = true;
 
   grid.forEach(row => {
-    // prendre le premier pas réel (pas le label)
-    const firstStep = row.find(step => step.dataset && step.dataset.inst);
-    const inst = firstStep?.dataset.inst;
+    const inst = row[0].dataset.inst;
 
     // IGNORER les instruments non évalués
     if (!correctPattern[inst]) return;
-
+    
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
         ok = false;
       }
-      step.classList.remove("correct"); // réinitialisation
+      step.classList.remove("correct");
     });
   });
 
-  const controlsDiv = document.getElementById("controls");
-  let msg = document.getElementById("successMsg");
-  if(!msg){
-    msg = document.createElement("div");
-    msg.id = "successMsg";
-    msg.textContent = "Bravo !";
-    msg.style.position = "absolute"; // ne pas décaler le layout
-    msg.style.top = "50px";
-    msg.style.left = "50%";
-    msg.style.transform = "translateX(-50%)";
-    msg.style.fontWeight = "bold";
-    msg.style.color = "#2e7d32";
-    controlsDiv.appendChild(msg);
-  }
-
   if(ok){
     grid.forEach(row => {
-      const firstStep = row.find(step => step.dataset && step.dataset.inst);
-      const inst = firstStep?.dataset.inst;
-      if (!correctPattern[inst]) return;
-
+      const inst = row[0].dataset.inst;
+      if(!correctPattern[inst]) return;
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
-    msg.style.display = "block";
-  } else {
-    msg.style.display = "none";
   }
 }
