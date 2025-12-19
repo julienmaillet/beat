@@ -203,21 +203,57 @@ document.querySelectorAll(".pad").forEach(pad => {
 });
 
 // --- Validation automatique du pattern ---
+// Modifier uniquement correctPattern pour changer l'exercice
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
-  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
 };
 
 function checkPattern() {
+  let ok = true;
+
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
+
+    // Ignorer les instruments non évalués
+    if (!correctPattern[inst]) return;
+
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
-      step.classList.remove("correct");
-      if(step.classList.contains("active") && shouldBeActive){
-        step.classList.add("correct");
+      if(step.classList.contains("active") !== shouldBeActive){
+        ok = false;
       }
+      step.classList.remove("correct");
     });
   });
+
+  // Affichage des cases correctes uniquement si tout est bon
+  if(ok){
+    grid.forEach(row => {
+      const inst = row[0].dataset.inst;
+      if(!correctPattern[inst]) return;
+      row.forEach((step, i) => {
+        if(correctPattern[inst][i]) step.classList.add("correct");
+      });
+    });
+
+    // Message "Bravo !" visible
+    let msg = document.getElementById("successMsg");
+    if(!msg){
+      msg = document.createElement("div");
+      msg.id = "successMsg";
+      msg.textContent = "Bravo !";
+      msg.style.position = "absolute";
+      msg.style.top = "0";
+      msg.style.left = "50%";
+      msg.style.transform = "translateX(-50%)";
+      msg.style.fontWeight = "bold";
+      msg.style.color = "#2e7d32";
+      document.body.appendChild(msg);
+    }
+    msg.style.display = "block";
+  } else {
+    const msg = document.getElementById("successMsg");
+    if(msg) msg.style.display = "none";
+  }
 }
