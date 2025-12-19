@@ -5,36 +5,42 @@ body {
   text-align: center;
 }
 
-/* ---------- TITRE ---------- */
 h1 {
-  text-align: center;
   margin-bottom: 20px;
 }
 
-/* ---------- GRILLE ---------- */
-#grid {
-  max-width: 700px;
-  margin: 0 auto 20px auto;
+/* ---------- CONTROLES ---------- */
+
+#controls {
+  margin-bottom: 15px;
 }
 
-/* Une ligne (label + 16 pas) */
-.row {
+#controls label {
+  margin: 0 10px;
+}
+
+/* ---------- GRILLE ---------- */
+
+#grid {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.row,
+.timeRow {
   display: grid;
   grid-template-columns: 80px repeat(16, 1fr);
   gap: 4px;
-  margin-bottom: 6px;
   align-items: center;
+  margin-bottom: 6px;
 }
 
-/* Label instrument */
 .rowLabel {
   text-align: right;
   padding-right: 8px;
   font-weight: bold;
-  font-size: 14px;
 }
 
-/* Pas */
 .step {
   aspect-ratio: 1;
   background: #ddd;
@@ -42,51 +48,32 @@ h1 {
   cursor: pointer;
 }
 
-/* Premier pas de chaque groupe de 4 */
 .step.groupStart {
   background: #bdbdbd;
 }
 
-/* Pas actif */
 .step.active {
   background: #ffcc00;
 }
 
-/* Pas actif + premier du groupe */
-.step.groupStart.active {
-  background: #ffcc00;
-}
-
-/* Pas en cours de lecture */
 .step.playing {
-  outline: 2px solid #000;
+  outline: 2px solid black;
 }
 
-/* ---------- LIGNE DES TEMPS ---------- */
-.timeRow {
-  display: grid;
-  grid-template-columns: 80px repeat(16, 1fr);
-  gap: 4px;
-  align-items: center;
-  margin-top: 6px;
-}
+/* ---------- TEMPS ---------- */
 
 .timeRow div {
-  text-align: center;
   font-weight: bold;
-  font-size: 14px;
-  color: #333;
-}
-
-/* ---------- CONTRÔLES ---------- */
-#controls {
-  margin-top: 15px;
 }
 
 /* ---------- PADS ---------- */
+
+#pads {
+  margin-top: 15px;
+}
+
 .pad {
-  width: calc((100% - 80px) / 16 * 3);
-  max-width: 120px;
+  width: 80px;
   aspect-ratio: 1;
   margin: 5px;
   border-radius: 8px;
@@ -97,5 +84,29 @@ h1 {
 }
 
 .pad.pressed {
-  background: #bdbdbd; /* couleur pad actif */
+  background: #bdbdbd;
+}
+
+/* ---------- PATTERNS ---------- */
+
+.step.pattern-fourfloor {
+  outline: 3px solid #4caf50;
+  outline-offset: -3px;
+}
+
+.step.pattern-tresillo {
+  outline: 3px solid #2196f3;
+  outline-offset: -3px;
+}
+
+#patternContainer {
+  margin-top: 15px;
+}
+
+#patternContainer .pattern-fourfloor {
+  color: #4caf50;
+}
+
+#patternContainer .pattern-tresillo {
+  color: #2196f3;
 }
