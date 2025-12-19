@@ -58,14 +58,16 @@ const patterns = [
     name: "Four on the floor",
     inst: "kick",
     steps: [0,4,8,12],
-    cssClass: "pattern-fourfloor"
+    cssClass: "pattern-fourfloor",
+    color: "#4caf50" // ajout
   },
   {
     id: "tresillo",
     name: "Trésillo",
     inst: null,
     steps: [0,3,6,10],
-    cssClass: "pattern-tresillo"
+    cssClass: "pattern-tresillo",
+    color: "#2196f3" // ajout
   }
 ];
 
@@ -144,6 +146,7 @@ function updatePatternDisplay(validPatterns){
   uniques.forEach(p => {
     const div = document.createElement("div");
     div.textContent = p.name;
+   div.style.color = p.color; //ajout !!
     div.classList.add(p.cssClass);
     patternContainer.appendChild(div);
   });
