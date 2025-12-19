@@ -206,7 +206,8 @@ document.querySelectorAll(".pad").forEach(pad => {
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
 
 function checkPattern() {
@@ -227,14 +228,12 @@ function checkPattern() {
     });
   });
 
-  // --- Affichage du message Bravo ! sans décaler la page ---
   const controlsDiv = document.getElementById("controls");
   let msg = document.getElementById("successMsg");
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
     msg.textContent = "Bravo !";
-    msg.style.display = "none"; // invisible par défaut
     controlsDiv.appendChild(msg);
   }
 
