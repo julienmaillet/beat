@@ -206,8 +206,7 @@ document.querySelectorAll(".pad").forEach(pad => {
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
-  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
 };
 
 function checkPattern() {
@@ -215,6 +214,10 @@ function checkPattern() {
 
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
+
+    // ⬅️ IGNORER les instruments non évalués
+    if (!correctPattern[inst]) return;
+    
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
