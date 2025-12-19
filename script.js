@@ -269,14 +269,27 @@ document.querySelectorAll(".pad").forEach(p => {
   p.onclick = () => play(p.dataset.inst);
 });
 
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", e => {                                 // ajout ...>
+  let pad;
 
-  if(e.code === "Space"){
-    e.preventDefault();
-    document.getElementById("play").click();
+  if(e.key === "s") pad = document.querySelector('.pad[data-inst="kick"]');
+  if(e.key === "d") pad = document.querySelector('.pad[data-inst="snare"]');
+  if(e.key === "f") pad = document.querySelector('.pad[data-inst="hihat"]');
+
+  if(pad){
+    pad.classList.add("pressed");
+    setTimeout(() => pad.classList.remove("pressed"), 100);
   }
+});                                                                          // <... ajout à la place de :
 
-  if(e.key === "s") play("kick");
-  if(e.key === "d") play("snare");
-  if(e.key === "f") play("hihat");
-});
+// document.addEventListener("keydown", e => {
+
+//  if(e.code === "Space"){
+ //   e.preventDefault();
+ //   document.getElementById("play").click();
+//  }
+
+//  if(e.key === "s") play("kick");
+//  if(e.key === "d") play("snare");
+//  if(e.key === "f") play("hihat");
+// });
