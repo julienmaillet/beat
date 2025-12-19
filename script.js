@@ -1,52 +1,83 @@
-// ---------- AUDIO ----------
+/* ===============================
+   AUDIO
+================================ */
+
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
 const instruments = {
-  kick: "sounds/kick.wav",
+  hihat: "sounds/hihat.wav",
   snare: "sounds/snare.wav",
-  hihat: "sounds/hihat.wav"
+  kick: "sounds/kick.wav"
 };
 
 const buffers = {};
+
 let grid = [];
 let stepIndex = 0;
 let timer = null;
 let metronomeOn = false;
 
-// ---------- PATTERNS (À MODIFIER ICI) ----------
+/* ===============================
+   METRONOME
+================================ */
+
+const metronomeSounds = {
+  strong: "sounds/click_strong.wav",
+  soft: "sounds/click_soft.wav"
+};
+const metronomeBuffers = {};
+
+async function loadSound(name, url){
+  const res = await fetch(url);
+  const arrayBuffer = await res.arrayBuffer();
+  buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+}
+
+async function loadMetronomeSounds(){
+  for(let key in metronomeSounds){
+    const res = await fetch(metronomeSounds[key]);
+    const arrayBuffer = await res.arrayBuffer();
+    metronomeBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
+  }
+}
+
+Promise.all(
+  Object.entries(instruments).map(([k,v]) => loadSound(k,v))
+);
+
+loadMetronomeSounds();
+
+/* ===============================
+   PATTERNS (FACILE À ÉTENDRE)
+================================ */
+
 const patterns = [
   {
     id: "fourfloor",
     name: "Four on the floor",
     inst: "kick",
-    steps: [0, 4, 8, 12],
+    steps: [0,4,8,12],
     cssClass: "pattern-fourfloor"
   },
   {
     id: "tresillo",
     name: "Trésillo",
     inst: null,
-    steps: [0, 3, 6, 10],
+    steps: [0,3,6,10],
     cssClass: "pattern-tresillo"
   }
 ];
 
-// ---------- CHARGEMENT SONS ----------
-async function loadSound(name, url) {
-  const res = await fetch(url);
-  const buf = await res.arrayBuffer();
-  buffers[name] = await audioCtx.decodeAudioData(buf);
-}
+/* ===============================
+   GRILLE
+================================ */
 
-Promise.all(
-  Object.entries(instruments).map(([k, v]) => loadSound(k, v))
-);
-
-// ---------- GRILLE ----------
 const gridEl = document.getElementById("grid");
 
-Object.keys(instruments).forEach(inst => {
+/* ordre logique : aigu → grave */
+["hihat", "snare", "kick"].forEach(inst => {
+
   const row = [];
   const rowEl = document.createElement("div");
   rowEl.className = "row";
@@ -56,11 +87,13 @@ Object.keys(instruments).forEach(inst => {
   label.textContent = inst;
   rowEl.appendChild(label);
 
-  for (let i = 0; i < 16; i++) {
+  for(let i = 0; i < 16; i++){
     const step = document.createElement("div");
     step.className = "step";
-    if (i % 4 === 0) step.classList.add("groupStart");
+    if(i % 4 === 0) step.classList.add("groupStart");
+
     step.dataset.inst = inst;
+    step.dataset.patterns = "";
 
     step.onclick = () => {
       step.classList.toggle("active");
@@ -68,121 +101,179 @@ Object.keys(instruments).forEach(inst => {
       checkPatterns();
     };
 
-    row.push(step);
     rowEl.appendChild(step);
+    row.push(step);
   }
 
-  grid.push(row);
   gridEl.appendChild(rowEl);
+  grid.push(row);
 });
 
-// ---------- LIGNE DES TEMPS ----------
-const timeRow = document.createElement("div");
-timeRow.className = "timeRow";
-timeRow.appendChild(document.createElement("div"));
+/* ===============================
+   LIGNE DES TEMPS
+================================ */
 
-for (let i = 0; i < 16; i++) {
-  const d = document.createElement("div");
-  if (i % 4 === 0) d.textContent = i / 4 + 1;
-  timeRow.appendChild(d);
+const timeRowEl = document.createElement("div");
+timeRowEl.className = "timeRow";
+timeRowEl.appendChild(document.createElement("div"));
+
+for(let i = 0; i < 16; i++){
+  const div = document.createElement("div");
+  if(i % 4 === 0) div.textContent = (i / 4) + 1;
+  timeRowEl.appendChild(div);
 }
 
-gridEl.appendChild(timeRow);
+gridEl.appendChild(timeRowEl);
 
-// ---------- PATTERN DISPLAY ----------
+/* ===============================
+   AFFICHAGE DES PATTERNS
+================================ */
+
 const patternContainer = document.createElement("div");
-patternContainer.id = "patternContainer";
+patternContainer.style.marginTop = "10px";
+patternContainer.style.fontWeight = "bold";
 gridEl.after(patternContainer);
 
-// ---------- PLAY ----------
-function play(inst) {
-  if (!buffers[inst]) return;
+function updatePatternDisplay(validPatterns){
+  patternContainer.innerHTML = "";
+
+  const uniques = [...new Map(
+    validPatterns.map(p => [p.id, p])
+  ).values()];
+
+  uniques.forEach(p => {
+    const div = document.createElement("div");
+    div.textContent = p.name;
+    div.classList.add(p.cssClass);
+    patternContainer.appendChild(div);
+  });
+}
+
+/* ===============================
+   CHECK PATTERNS
+================================ */
+
+function checkPatterns(){
+  const validPatterns = [];
+
+  grid.forEach(row => {
+    row.forEach(step => {
+      patterns.forEach(p => step.classList.remove(p.cssClass));
+      step.dataset.patterns = "";
+    });
+  });
+
+  patterns.forEach(pattern => {
+
+    const rows = pattern.inst
+      ? grid.filter(r => r[0].dataset.inst === pattern.inst)
+      : grid;
+
+    rows.forEach(row => {
+
+      const valid = pattern.steps.every(
+        idx => row[idx].classList.contains("active")
+      );
+
+      if(valid){
+        validPatterns.push(pattern);
+
+        pattern.steps.forEach(idx => {
+          const step = row[idx];
+          step.classList.add(pattern.cssClass);
+        });
+      }
+    });
+  });
+
+  updatePatternDisplay(validPatterns);
+}
+
+/* ===============================
+   PLAY SOUND
+================================ */
+
+function play(inst){
+  const buf = buffers[inst];
+  if(!buf) return;
   const src = audioCtx.createBufferSource();
-  src.buffer = buffers[inst];
+  src.buffer = buf;
   src.connect(audioCtx.destination);
   src.start();
 }
 
-// ---------- SEQUENCEUR ----------
-function tick() {
+/* ===============================
+   SEQUENCEUR
+================================ */
+
+function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
 
   grid.forEach(row => {
     const step = row[stepIndex];
     step.classList.add("playing");
-    if (step.classList.contains("active")) {
+
+    if(step.classList.contains("active")){
       play(step.dataset.inst);
     }
   });
 
+  if(metronomeOn){
+    let buf = null;
+    if(stepIndex === 0) buf = metronomeBuffers.strong;
+    else if([4,8,12].includes(stepIndex)) buf = metronomeBuffers.soft;
+
+    if(buf){
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(audioCtx.destination);
+      src.start();
+    }
+  }
+
   stepIndex = (stepIndex + 1) % 16;
 }
 
-// ---------- PATTERN CHECK ----------
-function checkPatterns() {
-  // nettoyage
-  grid.flat().forEach(step => {
-    patterns.forEach(p => step.classList.remove(p.cssClass));
-  });
+/* ===============================
+   CONTROLES
+================================ */
 
-  const found = [];
-
-  patterns.forEach(pattern => {
-    const rows = pattern.inst
-      ? [grid.find(r => r[0].dataset.inst === pattern.inst)]
-      : grid;
-
-    rows.forEach(row => {
-      if (
-        row &&
-        pattern.steps.every(i => row[i].classList.contains("active"))
-      ) {
-        found.push(pattern);
-        pattern.steps.forEach(i => row[i].classList.add(pattern.cssClass));
-      }
-    });
-  });
-
-  updatePatternDisplay(found);
-}
-
-// ---------- AFFICHAGE ----------
-function updatePatternDisplay(patternsFound) {
-  patternContainer.innerHTML = "";
-
-  [...new Map(patternsFound.map(p => [p.id, p])).values()]
-    .forEach(p => {
-      const d = document.createElement("div");
-      d.textContent = p.name;
-      d.className = p.cssClass;
-      d.style.fontWeight = "bold";
-      patternContainer.appendChild(d);
-    });
-}
-
-// ---------- CONTROLES ----------
 document.getElementById("play").onclick = () => {
-  if (timer) {
+
+  if(timer){
     clearInterval(timer);
     timer = null;
     return;
   }
-  audioCtx.resume();
-  const bpm = +tempo.value;
-  timer = setInterval(tick, (60 / bpm / 4) * 1000);
+
+  if(audioCtx.state === "suspended") audioCtx.resume();
+
+  const bpm = +document.getElementById("tempo").value;
+  const interval = (60 / bpm / 4) * 1000;
+  timer = setInterval(tick, interval);
 };
 
 document.getElementById("metronomeBtn").onclick = () => {
   metronomeOn = !metronomeOn;
+  metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
 };
 
-// ---------- PADS ----------
+/* ===============================
+   PADS + CLAVIER
+================================ */
+
 document.querySelectorAll(".pad").forEach(p => {
   p.onclick = () => play(p.dataset.inst);
 });
 
 document.addEventListener("keydown", e => {
-  if (e.key === "s") play("kick");
-  if (e.key === "d") play("snare");
-  if (e.key === "f") play("hihat");
+
+  if(e.code === "Space"){
+    e.preventDefault();
+    document.getElementById("play").click();
+  }
+
+  if(e.key === "s") play("kick");
+  if(e.key === "d") play("snare");
+  if(e.key === "f") play("hihat");
 });
