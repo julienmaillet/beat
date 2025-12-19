@@ -57,11 +57,6 @@ h1 {
   background: #ffcc00;
 }
 
-/* Pas actif + premier du groupe */
-.step.groupStart.correct {
-  background: #4caf50;
-}
-
 /* Pas en cours de lecture */
 .step.playing {
   outline: 2px solid #000;
@@ -108,11 +103,4 @@ h1 {
 
 .pad.pressed {
   background: #bdbdbd; /* couleur pad actif */
-}
-
-/* ---------- MESSAGE SUCCÈS ---------- */
-#successMsg {
-  margin-top: 10px;
-  font-weight: bold;
-  color: #2e7d32;
 }
