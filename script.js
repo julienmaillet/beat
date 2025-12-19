@@ -43,8 +43,9 @@ Promise.all(
 loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
+// 🔹 Correction de l’ordre des lignes : kick, snare, hihat
 const gridEl = document.getElementById("grid");
-["hihat","snare","kick"].forEach(inst=>{
+["kick","snare","hihat"].forEach(inst=>{
   const row = [];
   const rowEl = document.createElement("div");
   rowEl.className = "row";
@@ -140,6 +141,7 @@ function tick(){
 
 // --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
+
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
   metronomeBtn.textContent = metronomeOn
@@ -180,18 +182,33 @@ document.addEventListener("keydown", e=>{
 
 // --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => pad.classList.add("pressed"));
-  pad.addEventListener("mouseup", () => pad.classList.remove("pressed"));
-  pad.addEventListener("mouseleave", () => pad.classList.remove("pressed"));
-  pad.addEventListener("touchstart", () => pad.classList.add("pressed"));
-  pad.addEventListener("touchend", () => pad.classList.remove("pressed"));
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
 });
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
-  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  // hihat non évalué → ignoré
 };
 
 function checkPattern() {
@@ -200,8 +217,9 @@ function checkPattern() {
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
-    if(!correctPattern[inst]) return; // ignorer les instruments non évalués
-
+    // IGNORER les instruments non évalués
+    if (!correctPattern[inst]) return;
+    
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
@@ -211,23 +229,24 @@ function checkPattern() {
     });
   });
 
-  // Affichage du message "Bravo !" sous les contrôles
   const controlsDiv = document.getElementById("controls");
   let msg = document.getElementById("successMsg");
   if(!msg){
     msg = document.createElement("div");
     msg.id = "successMsg";
     msg.textContent = "Bravo !";
+    msg.style.position = "absolute"; // <-- pour ne pas décaler le layout
+    msg.style.top = "50px";           // ajuster si nécessaire
+    msg.style.left = "50%";
+    msg.style.transform = "translateX(-50%)";
     msg.style.fontWeight = "bold";
     msg.style.color = "#2e7d32";
-    msg.style.marginTop = "10px"; // sous les boutons, ne change pas mise en page
     controlsDiv.appendChild(msg);
   }
 
   if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
-      if(!correctPattern[inst]) return;
       row.forEach((step, i) => {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
@@ -235,6 +254,5 @@ function checkPattern() {
     msg.style.display = "block";
   } else {
     msg.style.display = "none";
-    grid.flat().forEach(step => step.classList.remove("correct"));
   }
 }
