@@ -86,6 +86,7 @@ h1 {
 /* ---------- CONTRÔLES ---------- */
 #controls {
   margin-top: 15px;
+  position: relative; /* pour le message "Bravo !" */
 }
 
 /* ---------- PADS ---------- */
@@ -103,4 +104,15 @@ h1 {
 
 .pad.pressed {
   background: #bdbdbd; /* couleur pad actif */
+}
+
+/* ---------- MESSAGE SUCCÈS ---------- */
+#successMsg {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  color: #2e7d32;
+  display: none;
 }
