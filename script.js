@@ -3,9 +3,10 @@ const audioCtx = new AudioContext();
 
 // --- Instruments et fichiers ---
 const instruments = {
-  kick: "sounds/kick.wav",
+  hihat: "sounds/hihat.wav",
   snare: "sounds/snare.wav",
-  hihat: "sounds/hihat.wav"
+  kick: "sounds/kick.wav"
+ 
 };
 
 const buffers = {};
@@ -43,7 +44,6 @@ Promise.all(
 loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
-// 🔹 Correction de l’ordre des lignes : kick, snare, hihat
 const gridEl = document.getElementById("grid");
 ["kick","snare","hihat"].forEach(inst=>{
   const row = [];
@@ -206,8 +206,8 @@ document.querySelectorAll(".pad").forEach(pad => {
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+  snare:  [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
   // hihat non évalué → ignoré
 };
 
