@@ -16,8 +16,8 @@ let metronomeOn = true;
 
 // --- Sons du métronome ---
 const metronomeSounds = {
-  strong: "sounds/click_strong.wav", // pas 1
-  soft: "sounds/click_soft.wav"      // pas 5, 9, 13
+  strong: "sounds/click_strong.wav",
+  soft: "sounds/click_soft.wav"
 };
 const metronomeBuffers = {};
 
@@ -49,7 +49,6 @@ const gridEl = document.getElementById("grid");
   const rowEl = document.createElement("div");
   rowEl.className = "row";
 
-  // Label à gauche
   const label = document.createElement("div");
   label.className = "rowLabel";
   label.textContent = inst;
@@ -59,7 +58,7 @@ const gridEl = document.getElementById("grid");
     const step = document.createElement("div");
     step.className = "step";
 
-    if(i % 4 === 0) step.classList.add("groupStart"); // <-- premier pas du groupe
+    if(i % 4 === 0) step.classList.add("groupStart");
 
     step.dataset.inst = inst;
 
@@ -119,7 +118,6 @@ function tick(){
     }
   });
 
-  // Métronome : click_strong sur pas 0, click_soft sur 4, 8, 12
   if(metronomeOn){
     let buf = null;
     if(stepIndex === 0){
@@ -138,9 +136,7 @@ function tick(){
   stepIndex = (stepIndex + 1) % 16;
 }
 
-// --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
-
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
   metronomeBtn.textContent = metronomeOn
@@ -148,7 +144,6 @@ metronomeBtn.onclick = () => {
     : "Métronome Off";
 };
 
-// --- Démarrage / arrêt séquenceur ---
 document.getElementById("play").onclick = ()=>{
   if(timer){
     clearInterval(timer);
@@ -163,7 +158,6 @@ document.getElementById("play").onclick = ()=>{
   timer = setInterval(tick, interval);
 };
 
-// --- Pads clic + clavier ---
 document.querySelectorAll(".pad").forEach(p=>{
   p.onclick = ()=>play(p.dataset.inst);
 });
@@ -172,41 +166,24 @@ document.addEventListener("keydown", e=>{
   if(e.key === "s") play("kick");
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
-
   if(e.code === "Space"){
     e.preventDefault();
     document.getElementById("play").click();
   }
 });
 
-// --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => {
-    pad.classList.add("pressed");
-  });
-
-  pad.addEventListener("mouseup", () => {
-    pad.classList.remove("pressed");
-  });
-
-  pad.addEventListener("mouseleave", () => {
-    pad.classList.remove("pressed");
-  });
-
-  // pour le tactile (tablettes / smartphones)
-  pad.addEventListener("touchstart", () => {
-    pad.classList.add("pressed");
-  });
-
-  pad.addEventListener("touchend", () => {
-    pad.classList.remove("pressed");
-  });
+  pad.addEventListener("mousedown", () => pad.classList.add("pressed"));
+  pad.addEventListener("mouseup", () => pad.classList.remove("pressed"));
+  pad.addEventListener("mouseleave", () => pad.classList.remove("pressed"));
+  pad.addEventListener("touchstart", () => pad.classList.add("pressed"));
+  pad.addEventListener("touchend", () => pad.classList.remove("pressed"));
 });
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-  // snare et hihat sont libres
+  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
+  // snare et hihat libres
 };
 
 function checkPattern() {
@@ -215,8 +192,7 @@ function checkPattern() {
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
-    // IGNORER les instruments non évalués
-    if (!correctPattern[inst]) return;
+    if(!correctPattern[inst]) return;
     
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
@@ -227,32 +203,13 @@ function checkPattern() {
     });
   });
 
-  const controlsDiv = document.getElementById("controls");
-  let msg = document.getElementById("successMsg");
-  if(!msg){
-    msg = document.createElement("div");
-    msg.id = "successMsg";
-    msg.textContent = "Bravo !";
-    msg.style.position = "absolute"; // pour ne pas décaler le layout
-    msg.style.top = "50px";           
-    msg.style.left = "50%";
-    msg.style.transform = "translateX(-50%)";
-    msg.style.fontWeight = "bold";
-    msg.style.color = "#2e7d32";
-    controlsDiv.appendChild(msg);
-  }
-
   if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
       if(!correctPattern[inst]) return;
       row.forEach((step, i) => {
-        // ✅ Mettre correct uniquement si la case est active et correcte
-        if(step.classList.contains("active") && correctPattern[inst][i]) step.classList.add("correct");
+        if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
-    msg.style.display = "block";
-  } else {
-    msg.style.display = "none";
   }
 }
