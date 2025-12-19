@@ -49,6 +49,7 @@ const gridEl = document.getElementById("grid");
   const rowEl = document.createElement("div");
   rowEl.className = "row";
 
+  // Label à gauche
   const label = document.createElement("div");
   label.className = "rowLabel";
   label.textContent = inst;
@@ -57,7 +58,9 @@ const gridEl = document.getElementById("grid");
   for(let i=0;i<16;i++){
     const step = document.createElement("div");
     step.className = "step";
-    if(i % 4 === 0) step.classList.add("groupStart");
+
+    if(i % 4 === 0) step.classList.add("groupStart"); // <-- premier pas du groupe
+
     step.dataset.inst = inst;
 
     step.onclick = () => {
@@ -116,6 +119,7 @@ function tick(){
     }
   });
 
+  // Métronome : click_strong sur pas 0, click_soft sur 4, 8, 12
   if(metronomeOn){
     let buf = null;
     if(stepIndex === 0){
@@ -136,9 +140,12 @@ function tick(){
 
 // --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
+
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
-  metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
+  metronomeBtn.textContent = metronomeOn
+    ? "Métronome On"
+    : "Métronome Off";
 };
 
 // --- Démarrage / arrêt séquenceur ---
@@ -148,7 +155,9 @@ document.getElementById("play").onclick = ()=>{
     timer = null;
     return;
   }
+
   if(audioCtx.state === "suspended") audioCtx.resume();
+
   const bpm = +document.getElementById("tempo").value;
   const interval = (60/bpm/4)*1000;
   timer = setInterval(tick, interval);
@@ -163,6 +172,7 @@ document.addEventListener("keydown", e=>{
   if(e.key === "s") play("kick");
   if(e.key === "d") play("snare");
   if(e.key === "f") play("hihat");
+
   if(e.code === "Space"){
     e.preventDefault();
     document.getElementById("play").click();
@@ -171,16 +181,31 @@ document.addEventListener("keydown", e=>{
 
 // --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => pad.classList.add("pressed"));
-  pad.addEventListener("mouseup", () => pad.classList.remove("pressed"));
-  pad.addEventListener("mouseleave", () => pad.classList.remove("pressed"));
-  pad.addEventListener("touchstart", () => pad.classList.add("pressed"));
-  pad.addEventListener("touchend", () => pad.classList.remove("pressed"));
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
 });
 
 // --- Validation automatique du pattern ---
 const correctPattern = {
-  kick: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]
+  kick:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
   // snare et hihat sont libres
 };
 
@@ -190,8 +215,9 @@ function checkPattern() {
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
+    // IGNORER les instruments non évalués
     if (!correctPattern[inst]) return;
-
+    
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
       if(step.classList.contains("active") !== shouldBeActive){
@@ -207,6 +233,12 @@ function checkPattern() {
     msg = document.createElement("div");
     msg.id = "successMsg";
     msg.textContent = "Bravo !";
+    msg.style.position = "absolute"; // pour ne pas décaler le layout
+    msg.style.top = "50px";           
+    msg.style.left = "50%";
+    msg.style.transform = "translateX(-50%)";
+    msg.style.fontWeight = "bold";
+    msg.style.color = "#2e7d32";
     controlsDiv.appendChild(msg);
   }
 
@@ -215,7 +247,8 @@ function checkPattern() {
       const inst = row[0].dataset.inst;
       if(!correctPattern[inst]) return;
       row.forEach((step, i) => {
-        if(correctPattern[inst][i]) step.classList.add("correct");
+        // ✅ Mettre correct uniquement si la case est active et correcte
+        if(step.classList.contains("active") && correctPattern[inst][i]) step.classList.add("correct");
       });
     });
     msg.style.display = "block";
