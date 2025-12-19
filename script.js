@@ -28,19 +28,20 @@ async function loadSound(name, url){
   buffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-Promise.all(
-  Object.entries(instruments).map(([k,v]) => loadSound(k,v))
-);
-
-// --- Charger les sons du métronome ---
 async function loadMetronomeSounds(){
   for(let key in metronomeSounds){
     const res = await fetch(metronomeSounds[key]);
     const arrayBuffer = await res.arrayBuffer();
-    metronomeBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
+    metronomeBuffers[key] = await
+      audioCtx.decodeAudioData(arrayBuffer);
   }
 }
-loadMetronomeSounds();
+
+Promise.all(
+  Object.entries(instruments).map(([k,v])=> loadSound(k,v))
+).then(()=>console.log("Sons instruments chargés"));
+
+loadMetronomeSounds().then(()=>console.log("Métronome chargé"));
 
 // --- Création de la grille ---
 const gridEl = document.getElementById("grid");
@@ -74,6 +75,22 @@ const gridEl = document.getElementById("grid");
   gridEl.appendChild(rowEl);
   grid.push(row);
 });
+
+// --- Ligne des chiffres sous la grille ---
+const timeRowEl = document.createElement("div");
+timeRowEl.className = "timeRow";
+const emptyLabel = document.createElement("div");
+timeRowEl.appendChild(emptyLabel);
+
+for(let i=0;i<16;i++){
+  const div = document.createElement("div");
+  if(i % 4 === 0){
+    div.textContent = (i/4 + 1);
+  }
+  timeRowEl.appendChild(div);
+}
+
+gridEl.appendChild(timeRowEl);
 
 // --- Jouer un son ---
 function play(inst){
@@ -133,17 +150,54 @@ document.getElementById("play").onclick = ()=>{
   timer = setInterval(tick, interval);
 };
 
+
+
+
 // --- Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
+
 metronomeBtn.onclick = ()=>{
   metronomeOn = !metronomeOn;
-  metronomeBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
+  metronomeBtn.textContent = metronomeOn
+    ? "Métronome On"
+    : "Métronome Off";
 };
+
+
+
 
 // --- Pads ---
 document.querySelectorAll(".pad").forEach(p=>{
   p.onclick = ()=>play(p.dataset.inst);
 });
+
+
+// --- Feedback visuel temporaire sur les pads ---
+document.querySelectorAll(".pad").forEach(pad => {
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
+});
+
+
+
 
 // --- Clavier ---
 document.addEventListener("keydown", e=>{
@@ -187,16 +241,27 @@ function checkPattern(){
     });
   });
 
-  if(ok){
+
+  const controlsDiv = document.getElementById("controls"); 
+let msg = document.getElementById("successMsg");
+  if(!msg){
+    msg = document.createElement("div");
+    msg.id = "successMsg";
+    msg.textContent = "Bravo !";
+    controlsDiv.appendChild(msg);
+  }
+
+  
+ if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
-      if(!patternToValidate[inst]) return;
-
       row.forEach((step, i) => {
-        if(patternToValidate[inst][i]){
-          step.classList.add("correct");
-        }
+        if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
+    msg.style.display = "block";
+  } else {
+    msg.style.display = "none";
   }
+}
 }
