@@ -140,7 +140,6 @@ function tick(){
 
 // --- Bouton Métronome On / Off ---
 const metronomeBtn = document.getElementById("metronomeBtn");
-
 metronomeBtn.onclick = () => {
   metronomeOn = !metronomeOn;
   metronomeBtn.textContent = metronomeOn
@@ -181,32 +180,18 @@ document.addEventListener("keydown", e=>{
 
 // --- Feedback visuel temporaire sur les pads ---
 document.querySelectorAll(".pad").forEach(pad => {
-  pad.addEventListener("mousedown", () => {
-    pad.classList.add("pressed");
-  });
-
-  pad.addEventListener("mouseup", () => {
-    pad.classList.remove("pressed");
-  });
-
-  pad.addEventListener("mouseleave", () => {
-    pad.classList.remove("pressed");
-  });
-
-  pad.addEventListener("touchstart", () => {
-    pad.classList.add("pressed");
-  });
-
-  pad.addEventListener("touchend", () => {
-    pad.classList.remove("pressed");
-  });
+  pad.addEventListener("mousedown", () => pad.classList.add("pressed"));
+  pad.addEventListener("mouseup", () => pad.classList.remove("pressed"));
+  pad.addEventListener("mouseleave", () => pad.classList.remove("pressed"));
+  pad.addEventListener("touchstart", () => pad.classList.add("pressed"));
+  pad.addEventListener("touchend", () => pad.classList.remove("pressed"));
 });
 
 // --- Validation automatique du pattern ---
-// Modifier uniquement correctPattern pour changer l'exercice
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0]
+  snare:  [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+  hihat:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
 };
 
 function checkPattern() {
@@ -215,8 +200,7 @@ function checkPattern() {
   grid.forEach(row => {
     const inst = row[0].dataset.inst;
 
-    // Ignorer les instruments non évalués
-    if (!correctPattern[inst]) return;
+    if(!correctPattern[inst]) return; // ignorer les instruments non évalués
 
     row.forEach((step, i) => {
       const shouldBeActive = !!correctPattern[inst][i];
@@ -227,7 +211,19 @@ function checkPattern() {
     });
   });
 
-  // Affichage des cases correctes uniquement si tout est bon
+  // Affichage du message "Bravo !" sous les contrôles
+  const controlsDiv = document.getElementById("controls");
+  let msg = document.getElementById("successMsg");
+  if(!msg){
+    msg = document.createElement("div");
+    msg.id = "successMsg";
+    msg.textContent = "Bravo !";
+    msg.style.fontWeight = "bold";
+    msg.style.color = "#2e7d32";
+    msg.style.marginTop = "10px"; // sous les boutons, ne change pas mise en page
+    controlsDiv.appendChild(msg);
+  }
+
   if(ok){
     grid.forEach(row => {
       const inst = row[0].dataset.inst;
@@ -236,24 +232,9 @@ function checkPattern() {
         if(correctPattern[inst][i]) step.classList.add("correct");
       });
     });
-
-    // Message "Bravo !" visible
-    let msg = document.getElementById("successMsg");
-    if(!msg){
-      msg = document.createElement("div");
-      msg.id = "successMsg";
-      msg.textContent = "Bravo !";
-      msg.style.position = "absolute";
-      msg.style.top = "0";
-      msg.style.left = "50%";
-      msg.style.transform = "translateX(-50%)";
-      msg.style.fontWeight = "bold";
-      msg.style.color = "#2e7d32";
-      document.body.appendChild(msg);
-    }
     msg.style.display = "block";
   } else {
-    const msg = document.getElementById("successMsg");
-    if(msg) msg.style.display = "none";
+    msg.style.display = "none";
+    grid.flat().forEach(step => step.classList.remove("correct"));
   }
 }
