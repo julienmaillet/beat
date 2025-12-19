@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Séquenceur</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Séquenceur</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1 style="text-align:center;">Construis le pattern</h1>
+<h1>Construis le pattern</h1>
 
-<div id="controls" style="text-align:center; margin:15px 0;">
+<div id="controls">
   <button id="play">Play / Stop</button>
-  <label>Tempo
+
+  <label>
+    Tempo
     <input id="tempo" type="number" value="120" min="40" max="200">
   </label>
-  <button id="metronomeBtn">Métronome On</button>
+
+  <button id="metronomeBtn">Métronome Off</button>
 </div>
 
 <div id="grid"></div>
 
-<div style="margin: 15px 0; text-align:center;">
+<div id="pads">
   <button class="pad" data-inst="kick">Kick (S)</button>
   <button class="pad" data-inst="snare">Snare (D)</button>
   <button class="pad" data-inst="hihat">Hi-Hat (F)</button>
