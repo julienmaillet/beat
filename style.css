@@ -62,11 +62,6 @@ h1 {
   outline: 2px solid #000;
 }
 
-/* Pas correct (validation) */
-.step.correct {
-  background: #4caf50;
-}
-
 /* ---------- LIGNE DES TEMPS ---------- */
 .timeRow {
   display: grid;
@@ -103,11 +98,4 @@ h1 {
 
 .pad.pressed {
   background: #bdbdbd; /* couleur pad actif */
-}
-
-/* ---------- MESSAGE SUCCÈS ---------- */
-#successMsg {
-  margin-top: 10px;
-  font-weight: bold;
-  color: #2e7d32;
 }
