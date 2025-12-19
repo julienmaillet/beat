@@ -179,6 +179,30 @@ document.addEventListener("keydown", e=>{
   }
 });
 
+// --- Feedback visuel temporaire sur les pads ---
+document.querySelectorAll(".pad").forEach(pad => {
+  pad.addEventListener("mousedown", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("mouseup", () => {
+    pad.classList.remove("pressed");
+  });
+
+  pad.addEventListener("mouseleave", () => {
+    pad.classList.remove("pressed");
+  });
+
+  // pour le tactile (tablettes / smartphones)
+  pad.addEventListener("touchstart", () => {
+    pad.classList.add("pressed");
+  });
+
+  pad.addEventListener("touchend", () => {
+    pad.classList.remove("pressed");
+  });
+});
+
 // --- Validation automatique du pattern ---
 const correctPattern = {
   kick:   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
