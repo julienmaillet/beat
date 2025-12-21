@@ -52,10 +52,8 @@ const patterns = [
   {id:"fourfloor", name:"Four on the floor", inst:"kick", steps:[0,4,8,12], cssClass:"pattern-fourfloor", color:"#1F3A5F"},
   {id:"backbeat", name:"BackBeat", inst:"snare", steps:[4,12], cssClass:"pattern-backbeat", color:"#5A3D7A"},
   {id:"onedrop", name:"OneDrop", inst:["kick","snare"], steps:[8], cssClass:"pattern-onedrop", color:"#9E2A2B"},
-   
   {id:"tresillo", name:"Trésillo", inst:null, steps:[0,6,12], cssClass:"pattern-tresillo", color:"#1E7F7A"},
   {id:"tresillo2", name:"Trésillo x2", inst:null, steps:[0,3,6,8,11,14], cssClass:"pattern-tresillo2", color:"#1E7F7A"},
-   
   {id:"son", name:"Son", inst:null, steps:[0,3,6,9,12], cssClass:"pattern-son", color:"#4A6FA5"},
   {id:"shiko", name:"Shiko", inst:null, steps:[0,4,6,10,12], cssClass:"pattern-shiko", color:"#7C9CBF"},
   {id:"soukous", name:"Soukous", inst:null, steps:[0,3,6,10,11], cssClass:"pattern-soukous", color:"#6F8F72"},
@@ -70,7 +68,6 @@ const patterns = [
 ================================ */
 const gridEl = document.getElementById("grid");
 
-/* ordre aigu → grave */
 ["hihat","snare","kick"].forEach(inst => {
   const row = [];
   const rowEl = document.createElement("div");
@@ -135,16 +132,14 @@ function updatePatternDisplay(validPatterns){
 }
 
 /* ===============================
-   CHECK PATTERNS MULTI-INSTRUMENT
+   CHECK PATTERNS
 ================================ */
 function checkPatterns() {
   const validPatterns = [];
 
-  // Reset visuel
   grid.forEach(row => {
     row.forEach(step => {
       patterns.forEach(p => step.classList.remove(p.cssClass));
-      step.dataset.patterns = "";
     });
   });
 
@@ -152,23 +147,15 @@ function checkPatterns() {
     let rowsToCheck;
 
     if (pattern.inst === null) {
-      // FULL : toutes les lignes possibles
       rowsToCheck = grid;
     } else if (Array.isArray(pattern.inst)) {
-      // Multi-instrument AND (ex: One Drop)
-      rowsToCheck = grid.filter(r =>
-        pattern.inst.includes(r[0].dataset.inst)
-      );
+      rowsToCheck = grid.filter(r => pattern.inst.includes(r[0].dataset.inst));
     } else {
-      // Instrument unique
-      rowsToCheck = grid.filter(r =>
-        r[0].dataset.inst === pattern.inst
-      );
+      rowsToCheck = grid.filter(r => r[0].dataset.inst === pattern.inst);
     }
 
     let validRows = [];
 
-    // === CAS FULL (OR logique) ===
     if (pattern.inst === null) {
       rowsToCheck.forEach(row => {
         const rowValid = pattern.steps.every(
@@ -179,16 +166,12 @@ function checkPatterns() {
 
       if (validRows.length > 0) {
         validPatterns.push(pattern);
-
         validRows.forEach(row => {
-          pattern.steps.forEach(idx => {
-            row[idx].classList.add(pattern.cssClass);
-          });
+          pattern.steps.forEach(idx => row[idx].classList.add(pattern.cssClass));
         });
       }
 
     } else {
-      // === CAS NORMAL (AND logique) ===
       const valid = pattern.steps.every(stepIdx =>
         rowsToCheck.every(row =>
           row[stepIdx].classList.contains("active")
@@ -197,11 +180,8 @@ function checkPatterns() {
 
       if (valid) {
         validPatterns.push(pattern);
-
         rowsToCheck.forEach(row => {
-          pattern.steps.forEach(idx => {
-            row[idx].classList.add(pattern.cssClass);
-          });
+          pattern.steps.forEach(idx => row[idx].classList.add(pattern.cssClass));
         });
       }
     }
@@ -209,7 +189,6 @@ function checkPatterns() {
 
   updatePatternDisplay(validPatterns);
 }
-
 
 /* ===============================
    PLAY SOUND
@@ -235,19 +214,6 @@ function tick(){
       play(step.dataset.inst);
     }
   });
-
-  if(metronomeOn){
-    let buf=null;
-    if(stepIndex===0) buf=metronomeBuffers.strong;
-    else if([4,8,12].includes(stepIndex)) buf=metronomeBuffers.soft;
-    if(buf){
-      const src=audioCtx.createBufferSource();
-      src.buffer=buf;
-      src.connect(audioCtx.destination);
-      src.start();
-    }
-  }
-
   stepIndex=(stepIndex+1)%16;
 }
 
@@ -262,31 +228,33 @@ document.getElementById("play").onclick = () => {
   timer=setInterval(tick, interval);
 };
 
-document.getElementById("metronomeBtn").onclick = () => {
-  metronomeOn=!metronomeOn;
-  metronomeBtn.textContent=metronomeOn?"Métronome On":"Métronome Off";
-};
-
 /* ===============================
-   PADS + CLAVIER
+   PADS + CLAVIER  (MODIFIÉ)
 ================================ */
-document.querySelectorAll(".pad").forEach(p=>{
-  p.onclick=()=>play(p.dataset.inst);
+function triggerPad(pad){
+  if(!pad) return;
+  play(pad.dataset.inst);
+  pad.classList.add("pressed");
+  setTimeout(()=>pad.classList.remove("pressed"),100);
+}
+
+// souris + tactile
+document.querySelectorAll(".pad").forEach(pad=>{
+  pad.addEventListener("mousedown", e=>{
+    e.preventDefault();
+    triggerPad(pad);
+  });
+  pad.addEventListener("touchstart", e=>{
+    e.preventDefault();
+    triggerPad(pad);
+  });
 });
 
+// clavier
 document.addEventListener("keydown", e=>{
-  let pad;
+  let pad=null;
   if(e.key==="s") pad=document.querySelector('.pad[data-inst="kick"]');
   if(e.key==="d") pad=document.querySelector('.pad[data-inst="snare"]');
   if(e.key==="f") pad=document.querySelector('.pad[data-inst="hihat"]');
-
-  if(pad){
-    pad.classList.add("pressed");
-    setTimeout(()=>pad.classList.remove("pressed"),100);
-  }
-
-  if(e.code==="Space"){
-    e.preventDefault();
-    document.getElementById("play").click();
-  }
+  if(pad) triggerPad(pad);
 });
