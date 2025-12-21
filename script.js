@@ -51,9 +51,11 @@ loadMetronomeSounds();
 const patterns = [
   {id:"fourfloor", name:"Four on the floor", inst:"kick", steps:[0,4,8,12], cssClass:"pattern-fourfloor", color:"#1F3A5F"},
   {id:"backbeat", name:"BackBeat", inst:"snare", steps:[4,12], cssClass:"pattern-backbeat", color:"#5A3D7A"},
-  {id:"onedrop", name:"OneDrop", inst:["kick","snare"], steps:[4,12], cssClass:"pattern-onedrop", color:"#9E2A2B"},
+  {id:"onedrop", name:"OneDrop", inst:["kick","snare"], steps:[8], cssClass:"pattern-onedrop", color:"#9E2A2B"},
+   
   {id:"tresillo", name:"Trésillo", inst:null, steps:[0,6,12], cssClass:"pattern-tresillo", color:"#1E7F7A"},
-  {id:"tresillo2", name:"Trésillox2", inst:null, steps:[0,3,6,8,11,14], cssClass:"pattern-tresillo2", color:"#1E7F7A"},
+  {id:"tresillo2", name:"Trésillo x2", inst:null, steps:[0,3,6,8,11,14], cssClass:"pattern-tresillo2", color:"#1E7F7A"},
+   
   {id:"son", name:"Son", inst:null, steps:[0,3,6,9,12], cssClass:"pattern-son", color:"#4A6FA5"},
   {id:"shiko", name:"Shiko", inst:null, steps:[0,4,6,10,12], cssClass:"pattern-shiko", color:"#7C9CBF"},
   {id:"soukous", name:"Soukous", inst:null, steps:[0,3,6,10,11], cssClass:"pattern-soukous", color:"#6F8F72"},
@@ -138,6 +140,7 @@ function updatePatternDisplay(validPatterns){
 function checkPatterns() {
   const validPatterns = [];
 
+  // Reset visuel
   grid.forEach(row => {
     row.forEach(step => {
       patterns.forEach(p => step.classList.remove(p.cssClass));
@@ -147,30 +150,66 @@ function checkPatterns() {
 
   patterns.forEach(pattern => {
     let rowsToCheck;
-    if(pattern.inst===null){
+
+    if (pattern.inst === null) {
+      // FULL : toutes les lignes possibles
       rowsToCheck = grid;
-    } else if(Array.isArray(pattern.inst)){
-      rowsToCheck = grid.filter(r => pattern.inst.includes(r[0].dataset.inst));
+    } else if (Array.isArray(pattern.inst)) {
+      // Multi-instrument AND (ex: One Drop)
+      rowsToCheck = grid.filter(r =>
+        pattern.inst.includes(r[0].dataset.inst)
+      );
     } else {
-      rowsToCheck = grid.filter(r => r[0].dataset.inst===pattern.inst);
+      // Instrument unique
+      rowsToCheck = grid.filter(r =>
+        r[0].dataset.inst === pattern.inst
+      );
     }
 
-    const valid = pattern.steps.every(stepIdx =>
-      rowsToCheck.every(row => row[stepIdx].classList.contains("active"))
-    );
+    let validRows = [];
 
-    if(valid){
-      validPatterns.push(pattern);
+    // === CAS FULL (OR logique) ===
+    if (pattern.inst === null) {
       rowsToCheck.forEach(row => {
-        pattern.steps.forEach(idx => {
-          row[idx].classList.add(pattern.cssClass);
-        });
+        const rowValid = pattern.steps.every(
+          idx => row[idx].classList.contains("active")
+        );
+        if (rowValid) validRows.push(row);
       });
+
+      if (validRows.length > 0) {
+        validPatterns.push(pattern);
+
+        validRows.forEach(row => {
+          pattern.steps.forEach(idx => {
+            row[idx].classList.add(pattern.cssClass);
+          });
+        });
+      }
+
+    } else {
+      // === CAS NORMAL (AND logique) ===
+      const valid = pattern.steps.every(stepIdx =>
+        rowsToCheck.every(row =>
+          row[stepIdx].classList.contains("active")
+        )
+      );
+
+      if (valid) {
+        validPatterns.push(pattern);
+
+        rowsToCheck.forEach(row => {
+          pattern.steps.forEach(idx => {
+            row[idx].classList.add(pattern.cssClass);
+          });
+        });
+      }
     }
   });
 
   updatePatternDisplay(validPatterns);
 }
+
 
 /* ===============================
    PLAY SOUND
