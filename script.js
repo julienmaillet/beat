@@ -132,7 +132,7 @@ function updatePatternDisplay(validPatterns){
 }
 
 /* ===============================
-   CHECK PATTERNS
+   CHECK PATTERNS (exact match)
 ================================ */
 function checkPatterns() {
   const validPatterns = [];
@@ -156,34 +156,18 @@ function checkPatterns() {
 
     let validRows = [];
 
-    if (pattern.inst === null) {
-      rowsToCheck.forEach(row => {
-        const rowValid = pattern.steps.every(
-          idx => row[idx].classList.contains("active")
-        );
-        if (rowValid) validRows.push(row);
+    rowsToCheck.forEach(row => {
+      const activeIdx = row.map((s, idx) => s.classList.contains("active") ? idx : -1).filter(i => i !== -1);
+      if (activeIdx.length === pattern.steps.length && pattern.steps.every(idx => activeIdx.includes(idx))) {
+        validRows.push(row);
+      }
+    });
+
+    if (validRows.length > 0) {
+      validPatterns.push(pattern);
+      validRows.forEach(row => {
+        pattern.steps.forEach(idx => row[idx].classList.add(pattern.cssClass));
       });
-
-      if (validRows.length > 0) {
-        validPatterns.push(pattern);
-        validRows.forEach(row => {
-          pattern.steps.forEach(idx => row[idx].classList.add(pattern.cssClass));
-        });
-      }
-
-    } else {
-      const valid = pattern.steps.every(stepIdx =>
-        rowsToCheck.every(row =>
-          row[stepIdx].classList.contains("active")
-        )
-      );
-
-      if (valid) {
-        validPatterns.push(pattern);
-        rowsToCheck.forEach(row => {
-          pattern.steps.forEach(idx => row[idx].classList.add(pattern.cssClass));
-        });
-      }
     }
   });
 
@@ -229,7 +213,7 @@ document.getElementById("play").onclick = () => {
 };
 
 /* ===============================
-   PADS + CLAVIER  (MODIFIÉ)
+   PADS + CLAVIER  (grisé + son)
 ================================ */
 function triggerPad(pad){
   if(!pad) return;
