@@ -10,7 +10,6 @@ h1 {
 }
 
 /* ---------- CONTROLES ---------- */
-
 #controls {
   margin-bottom: 15px;
 }
@@ -20,7 +19,6 @@ h1 {
 }
 
 /* ---------- GRILLE ---------- */
-
 #grid {
   max-width: 700px;
   margin: 0 auto;
@@ -61,13 +59,11 @@ h1 {
 }
 
 /* ---------- TEMPS ---------- */
-
 .timeRow div {
   font-weight: bold;
 }
 
 /* ---------- PADS ---------- */
-
 #pads {
   margin-top: 15px;
 }
@@ -88,25 +84,98 @@ h1 {
 }
 
 /* ---------- PATTERNS ---------- */
-
 .step.pattern-fourfloor {
-  outline: 3px solid #4caf50;
+  outline: 3px solid #1F3A5F;
   outline-offset: -3px;
+}
+#patternContainer .pattern-fourfloor {
+  color: #1F3A5F;
+}
+
+.step.pattern-backbeat {
+  outline: 3px solid #5A3D7A;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-backbeat {
+  color: #5A3D7A;
+}
+
+.step.pattern-onedrop {
+  outline: 3px solid #9E2A2B;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-onedrop {
+  color: #9E2A2B;
 }
 
 .step.pattern-tresillo {
-  outline: 3px solid #2196f3;
+  outline: 3px solid #1E7F7A;
   outline-offset: -3px;
 }
-
-#patternContainer {
-  margin-top: 15px;
-}
-
-#patternContainer .pattern-fourfloor {
-  color: #4caf50;
-}
-
 #patternContainer .pattern-tresillo {
-  color: #2196f3;
+  color: #1E7F7A;
+}
+
+.step.pattern-tresillo2 {
+  outline: 3px solid #1E7F7A;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-tresillo2 {
+  color: #1E7F7A;
+}
+
+.step.pattern-son {
+  outline: 3px solid #4A6FA5;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-son {
+  color: #4A6FA5;
+}
+
+.step.pattern-shiko {
+  outline: 3px solid #7C9CBF;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-shiko {
+  color: #7C9CBF;
+}
+
+.step.pattern-soukous {
+  outline: 3px solid #6F8F72;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-soukous {
+  color: #6F8F72;
+}
+
+.step.pattern-rumba {
+  outline: 3px solid #4F9A8B;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-rumba {
+  color: #4F9A8B;
+}
+
+.step.pattern-bossanova {
+  outline: 3px solid #5E6E7E;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-bossanova {
+  color: #5E6E7E;
+}
+
+.step.pattern-gahu {
+  outline: 3px solid #7A8F8A;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-gahu {
+  color: #7A8F8A;
+}
+
+.step.pattern-samba {
+  outline: 3px solid #8FB3C9;
+  outline-offset: -3px;
+}
+#patternContainer .pattern-samba {
+  color: #8FB3C9;
 }
