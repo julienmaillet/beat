@@ -40,9 +40,8 @@ async function loadMetronomeSounds(){
   }
 }
 
-Promise.all(
-  Object.entries(instruments).map(([k,v]) => loadSound(k,v))
-);
+// Chargements (pas besoin d’attendre pour afficher l’UI)
+Promise.all(Object.entries(instruments).map(([k,v]) => loadSound(k,v)));
 loadMetronomeSounds();
 
 /* ===============================
@@ -84,11 +83,14 @@ const gridEl = document.getElementById("grid");
     if(i%4===0) step.classList.add("groupStart");
     step.dataset.inst = inst;
     step.dataset.patterns = "";
+
     step.onclick = () => {
+      if(audioCtx.state==="suspended") audioCtx.resume();
       step.classList.toggle("active");
       play(inst);
       checkPatterns();
     };
+
     rowEl.appendChild(step);
     row.push(step);
   }
@@ -115,6 +117,7 @@ gridEl.appendChild(timeRowEl);
    AFFICHAGE DES PATTERNS
 ================================ */
 const patternContainer = document.createElement("div");
+patternContainer.id = "patternContainer"; // ✅ important pour ton CSS (#patternContainer ...)
 patternContainer.style.marginTop="10px";
 patternContainer.style.fontWeight="bold";
 gridEl.after(patternContainer);
@@ -186,11 +189,26 @@ function play(inst){
   src.start();
 }
 
+function playMetronome(kind){
+  const buf = metronomeBuffers[kind];
+  if(!buf) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(audioCtx.destination);
+  src.start();
+}
+
 /* ===============================
    SEQUENCEUR
 ================================ */
 function tick(){
   grid.flat().forEach(s => s.classList.remove("playing"));
+
+  // métronome : 4 temps (0,4,8,12)
+  if(metronomeOn && (stepIndex % 4 === 0)){
+    playMetronome(stepIndex === 0 ? "strong" : "soft");
+  }
+
   grid.forEach(row => {
     const step=row[stepIndex];
     step.classList.add("playing");
@@ -198,6 +216,7 @@ function tick(){
       play(step.dataset.inst);
     }
   });
+
   stepIndex=(stepIndex+1)%16;
 }
 
@@ -205,21 +224,52 @@ function tick(){
    CONTROLES
 ================================ */
 document.getElementById("play").onclick = () => {
-  if(timer){ clearInterval(timer); timer=null; return; }
+  if(timer){
+    clearInterval(timer);
+    timer=null;
+    return;
+  }
   if(audioCtx.state==="suspended") audioCtx.resume();
+
   const bpm=+document.getElementById("tempo").value;
-  const interval=(60/bpm/4)*1000;
+  const interval=(60/bpm/4)*1000; // 16 pas = 4 double-croches par temps
+  stepIndex = 0;
   timer=setInterval(tick, interval);
 };
 
+document.getElementById("tempo").addEventListener("change", () => {
+  if(!timer) return;
+  clearInterval(timer);
+  timer = null;
+  const bpm=+document.getElementById("tempo").value;
+  const interval=(60/bpm/4)*1000;
+  timer=setInterval(tick, interval);
+});
+
+const metBtn = document.getElementById("metronomeBtn");
+metBtn.onclick = () => {
+  metronomeOn = !metronomeOn;
+  metBtn.textContent = metronomeOn ? "Métronome On" : "Métronome Off";
+};
+
 /* ===============================
-   PADS + CLAVIER  (grisé + son)
+   PADS + CLAVIER  (jaune + pulse)
 ================================ */
+function pulse(el){
+  el.classList.remove("pulse");
+  void el.offsetWidth;
+  el.classList.add("pulse");
+  el.addEventListener("animationend", () => el.classList.remove("pulse"), { once:true });
+}
+
 function triggerPad(pad){
   if(!pad) return;
+  if(audioCtx.state==="suspended") audioCtx.resume();
+
   play(pad.dataset.inst);
   pad.classList.add("pressed");
-  setTimeout(()=>pad.classList.remove("pressed"),100);
+  pulse(pad);
+  setTimeout(()=>pad.classList.remove("pressed"),120);
 }
 
 // souris + tactile
